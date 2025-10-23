@@ -3,16 +3,16 @@
 ## 📋 Quick Checklist
 
 ### Step 1: TV Setup
-- [ ] Enable "LG Connect Apps" on TV
-- [ ] Get TV IP address
-- [ ] Get TV MAC address
-- [ ] Test network connectivity (ping TV)
+- [x] Enable "LG Connect Apps" on TV
+- [x] Get TV IP address: 10.0.0.14
+- [x] Get TV MAC address: 34:E6:E6:F9:05:50
+- [x] Test network connectivity (ping TV)
 
 ### Step 2: Xcode Setup
-- [ ] Set deployment target to iOS 17.0
-- [ ] Configure signing & team
-- [ ] Add network permissions to Info.plist
-- [ ] Connect test device
+- [x] Set deployment target to iOS 17.0 
+- [x] Configure signing & team
+- [x] Add network permissions to Info.plist
+- [x] Connect test device
 
 ### Step 3: Shared Framework
 - [ ] Create `LGTVControl` framework target
@@ -57,6 +57,6 @@
 
 ---
 
-**Current Status:** 🔴 Not Started
+**Current Status:** � In Progress
 
 **Last Updated:** Oct 23, 2025
