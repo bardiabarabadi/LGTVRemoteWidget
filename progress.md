@@ -15,12 +15,12 @@
 - [x] Connect test device
 
 ### Step 3: Shared Framework
-- [ ] Create `LGTVControl` framework target
-- [ ] Implement WebSocket client
-- [ ] Add SSAP protocol handler
-- [ ] Add Keychain wrapper
-- [ ] Add Wake-on-LAN sender
-- [ ] Setup App Group sharing
+- [x] Create `LGTVControl` framework target
+- [x] Implement WebSocket client
+- [x] Add SSAP protocol handler (message types; full pairing/flow in Step 4)
+- [x] Add Keychain wrapper
+- [x] Add Wake-on-LAN sender
+- [x] Setup App Group sharing (entitlements + UserDefaults suite)
 
 ### Step 4: Main App
 - [ ] Build SwiftUI setup screen
