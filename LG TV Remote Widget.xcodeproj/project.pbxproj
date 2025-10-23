@@ -7,13 +7,13 @@
 	objects = {
 
 /* Begin PBXFileReference section */
-		31CBD0AD2EAABC3900512126 /* LG TV Remote Widget..app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "LG TV Remote Widget..app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		31CBD0AD2EAABC3900512126 /* LG TV Remote Widget.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "LG TV Remote Widget.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
-		31CBD0AF2EAABC3900512126 /* LG TV Remote Widget. */ = {
+		31CBD0AF2EAABC3900512126 /* LG TV Remote Widget */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
-			path = "LG TV Remote Widget.";
+			path = "LG TV Remote Widget";
 			sourceTree = "<group>";
 		};
 /* End PBXFileSystemSynchronizedRootGroup section */
@@ -32,7 +32,7 @@
 		31CBD0A42EAABC3900512126 = {
 			isa = PBXGroup;
 			children = (
-				31CBD0AF2EAABC3900512126 /* LG TV Remote Widget. */,
+				31CBD0AF2EAABC3900512126 /* LG TV Remote Widget */,
 				31CBD0AE2EAABC3900512126 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -40,7 +40,7 @@
 		31CBD0AE2EAABC3900512126 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				31CBD0AD2EAABC3900512126 /* LG TV Remote Widget..app */,
+				31CBD0AD2EAABC3900512126 /* LG TV Remote Widget.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -48,9 +48,9 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		31CBD0AC2EAABC3900512126 /* LG TV Remote Widget. */ = {
+		31CBD0AC2EAABC3900512126 /* LG TV Remote Widget */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 31CBD0B82EAABC3B00512126 /* Build configuration list for PBXNativeTarget "LG TV Remote Widget." */;
+			buildConfigurationList = 31CBD0B82EAABC3B00512126 /* Build configuration list for PBXNativeTarget "LG TV Remote Widget" */;
 			buildPhases = (
 				31CBD0A92EAABC3900512126 /* Sources */,
 				31CBD0AA2EAABC3900512126 /* Frameworks */,
@@ -61,13 +61,13 @@
 			dependencies = (
 			);
 			fileSystemSynchronizedGroups = (
-				31CBD0AF2EAABC3900512126 /* LG TV Remote Widget. */,
+				31CBD0AF2EAABC3900512126 /* LG TV Remote Widget */,
 			);
-			name = "LG TV Remote Widget.";
+			name = "LG TV Remote Widget";
 			packageProductDependencies = (
 			);
 			productName = "LG TV Remote Widget.";
-			productReference = 31CBD0AD2EAABC3900512126 /* LG TV Remote Widget..app */;
+			productReference = 31CBD0AD2EAABC3900512126 /* LG TV Remote Widget.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
@@ -85,7 +85,7 @@
 					};
 				};
 			};
-			buildConfigurationList = 31CBD0A82EAABC3900512126 /* Build configuration list for PBXProject "LG TV Remote Widget." */;
+			buildConfigurationList = 31CBD0A82EAABC3900512126 /* Build configuration list for PBXProject "LG TV Remote Widget" */;
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
 			knownRegions = (
@@ -99,7 +99,7 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				31CBD0AC2EAABC3900512126 /* LG TV Remote Widget. */,
+				31CBD0AC2EAABC3900512126 /* LG TV Remote Widget */,
 			);
 		};
 /* End PBXProject section */
@@ -313,7 +313,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		31CBD0A82EAABC3900512126 /* Build configuration list for PBXProject "LG TV Remote Widget." */ = {
+		31CBD0A82EAABC3900512126 /* Build configuration list for PBXProject "LG TV Remote Widget" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				31CBD0B62EAABC3B00512126 /* Debug */,
@@ -322,7 +322,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		31CBD0B82EAABC3B00512126 /* Build configuration list for PBXNativeTarget "LG TV Remote Widget." */ = {
+		31CBD0B82EAABC3B00512126 /* Build configuration list for PBXNativeTarget "LG TV Remote Widget" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				31CBD0B92EAABC3B00512126 /* Debug */,
