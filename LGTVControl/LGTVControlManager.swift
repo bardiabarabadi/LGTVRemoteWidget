@@ -181,6 +181,14 @@ public final class LGTVControlManager {
         return nil
     }
     
+    /// Clear stored credentials - useful for forcing re-pairing with new permissions
+    public func clearCredentials() {
+        print("[LGTVControlManager] 🗑️ Clearing stored credentials")
+        try? keychain.delete(service: Constants.keychainService, account: Constants.keychainAccount)
+        currentCredentials = nil
+        print("[LGTVControlManager] ✅ Credentials cleared - next connection will require pairing")
+    }
+    
     // MARK: - Pointer Input (Navigation)
     
     private func setupPointerInput() async throws {
@@ -190,6 +198,7 @@ public final class LGTVControlManager {
         let request = SSAPRequest(type: .request, uri: "ssap://com.webos.service.networkinput/getPointerInputSocket")
         guard let response = try await webSocket.sendRequest(request),
               let socketPath = response.payload?["socketPath"]?.value as? String else {
+            print("[LGTVControlManager] ❌ Failed to get pointer socket path - trying alternative method")
             throw ControlError.notConnected
         }
         
@@ -203,19 +212,62 @@ public final class LGTVControlManager {
         print("[LGTVControlManager] ✅ Pointer input ready")
     }
     
+    /// Alternative method: Try sending button via different API
+    private func sendButtonViaAlternativeAPI(_ button: PointerInputClient.Button) async throws {
+        print("[LGTVControlManager] 🔄 Trying alternative button API...")
+        
+        // Try different URIs that might work
+        let uris = [
+            "ssap://com.webos.service.tv.keymanager/processKeyInput",
+            "ssap://com.webos.service.networkinput/sendKeyEvent"
+        ]
+        
+        for uri in uris {
+            do {
+                let params: [String: AnyCodable] = [
+                    "key": AnyCodable(button.rawValue),
+                    "keyCode": AnyCodable(button.rawValue)
+                ]
+                let request = SSAPRequest(type: .request, uri: uri, payload: params)
+                let response = try await webSocket.sendRequest(request)
+                print("[LGTVControlManager] ✅ Alternative API worked with URI: \(uri)")
+                return
+            } catch {
+                print("[LGTVControlManager] ❌ Alternative URI failed: \(uri) - \(error)")
+            }
+        }
+        
+        throw ControlError.notConnected
+    }
+    
     public func sendButton(_ button: PointerInputClient.Button) async throws {
+        print("[LGTVControlManager] 🎮 sendButton(\(button.rawValue)) called")
+        print("[LGTVControlManager] 🔍 Current status: \(status)")
+        print("[LGTVControlManager] 🔍 Pointer input exists: \(pointerInput != nil)")
+        
         // Check if we have pointer input, if not try to set it up
         if pointerInput == nil {
             print("[LGTVControlManager] ⚠️ Pointer input not set up, attempting to connect...")
-            try await setupPointerInput()
+            do {
+                try await setupPointerInput()
+                print("[LGTVControlManager] ✅ Setup completed, pointer input now: \(pointerInput != nil)")
+            } catch {
+                print("[LGTVControlManager] ⚠️ Pointer socket setup failed, trying alternative API...")
+                // If pointer socket fails, try alternative method
+                try await sendButtonViaAlternativeAPI(button)
+                return
+            }
         }
         
         guard let pointerInput = pointerInput else {
-            print("[LGTVControlManager] ❌ Failed to setup pointer input")
-            throw ControlError.notConnected
+            print("[LGTVControlManager] ❌ No pointer input available, trying alternative API...")
+            try await sendButtonViaAlternativeAPI(button)
+            return
         }
         
+        print("[LGTVControlManager] 📤 Delegating to PointerInputClient...")
         try await pointerInput.sendButton(button)
+        print("[LGTVControlManager] ✅ Button sent successfully via manager")
     }
     
     public func sendClick() async throws {
@@ -244,7 +296,22 @@ public final class LGTVControlManager {
                 "CONTROL_INPUT_MEDIA_PLAYER",
                 "CONTROL_POWER",
                 "READ_INSTALLED_APPS",
-                "CONTROL_INPUT_JOYSTICK"
+                "CONTROL_INPUT_JOYSTICK",
+                "CONTROL_INPUT_TEXT",
+                "CONTROL_INPUT_MEDIA_RECORDING",
+                "CONTROL_INPUT_MEDIA_PLAYBACK",
+                "CONTROL_MOUSE_AND_KEYBOARD",
+                "READ_CURRENT_CHANNEL",
+                "READ_RUNNING_APPS",
+                "READ_TV_CURRENT_TIME",
+                "CONTROL_TV_SCREEN",
+                "CONTROL_TV_STANBY",
+                "READ_LGE_SDX",
+                "READ_LGE_TV_INPUT_EVENTS",
+                "READ_TV_CHANNEL_LIST",
+                "WRITE_SETTINGS",
+                "WRITE_NOTIFICATION_TOAST",
+                "CONTROL_INPUT_POINTER"
             ],
             signatures: [
                 .init(signatureVersion: 1, signature: "")

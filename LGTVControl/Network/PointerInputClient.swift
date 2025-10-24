@@ -16,6 +16,7 @@ public final class PointerInputClient: NSObject {
         print("[PointerInput] 🔌 Connecting to pointer socket: \(socketPath)")
         
         guard let url = URL(string: socketPath) else {
+            print("[PointerInput] ❌ Invalid socket path URL")
             throw PointerInputError.invalidSocketPath
         }
         
@@ -26,30 +27,66 @@ public final class PointerInputClient: NSObject {
         let newTask = session.webSocketTask(with: request)
         
         self.task = newTask
+        
+        print("[PointerInput] 🚀 Starting WebSocket task...")
         newTask.resume()
         
+        // Start receiving messages to keep connection alive
+        receiveMessage(task: newTask)
+        
         // Give it a moment to connect
-        try await Task.sleep(nanoseconds: 500_000_000) // 500ms
+        try await Task.sleep(nanoseconds: 1_000_000_000) // 1 second (increased from 500ms)
         isConnected = true
         
-        print("[PointerInput] ✅ Pointer socket connected")
+        print("[PointerInput] ✅ Pointer socket connected and ready")
+    }
+    
+    /// Receive messages from the pointer socket (keeps connection alive)
+    private func receiveMessage(task: URLSessionWebSocketTask) {
+        task.receive { [weak self] result in
+            switch result {
+            case .success(let message):
+                switch message {
+                case .string(let text):
+                    print("[PointerInput] 📨 Received: \(text)")
+                case .data(let data):
+                    print("[PointerInput] 📨 Received data: \(data.count) bytes")
+                @unknown default:
+                    print("[PointerInput] 📨 Received unknown message type")
+                }
+                // Continue receiving
+                self?.receiveMessage(task: task)
+            case .failure(let error):
+                print("[PointerInput] ❌ Receive error: \(error.localizedDescription)")
+                self?.isConnected = false
+            }
+        }
     }
     
     /// Send a button press (UP, DOWN, LEFT, RIGHT, ENTER, BACK, HOME, etc.)
     public func sendButton(_ button: Button) async throws {
+        print("[PointerInput] 🔍 sendButton called - isConnected: \(isConnected), task: \(task != nil ? "exists" : "nil")")
+        
         guard isConnected, let task = task else {
+            print("[PointerInput] ❌ Cannot send button - not connected! isConnected: \(isConnected), task: \(task != nil)")
             throw PointerInputError.notConnected
         }
         
-        let message = """
-        type:button
-        name:\(button.rawValue)
-        
-        """
+        // Message format: "type:button\nname:BUTTONNAME\n\n"
+        // The double newline at the end is important!
+        let message = "type:button\nname:\(button.rawValue)\n\n"
         
         print("[PointerInput] 📤 Sending button: \(button.rawValue)")
+        print("[PointerInput] 📝 Message bytes: \(message.utf8.map { String(format: "%02X", $0) }.joined(separator: " "))")
+        print("[PointerInput] 📝 Message length: \(message.count) bytes")
         
-        try await task.send(.string(message))
+        do {
+            try await task.send(.string(message))
+            print("[PointerInput] ✅ Button sent successfully: \(button.rawValue)")
+        } catch {
+            print("[PointerInput] ❌ Failed to send button: \(error.localizedDescription)")
+            throw PointerInputError.sendFailed(error.localizedDescription)
+        }
     }
     
     /// Send a click event

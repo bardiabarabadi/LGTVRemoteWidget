@@ -62,6 +62,11 @@ struct ContentView: View {
                     }
                     .disabled(!viewModel.isConnected)
                     
+                    Button(role: .destructive, action: { viewModel.clearCredentials() }) {
+                        Label("Clear Credentials (Force Re-Pair)", systemImage: "trash.circle")
+                    }
+                    .disabled(viewModel.isConnecting)
+                    
                     Button(action: { viewModel.powerOn() }) {
                         Label("Wake TV (WOL)", systemImage: "power.circle")
                     }
@@ -459,6 +464,23 @@ final class ConnectionViewModel: ObservableObject {
                     commandSuccess = false
                     commandResult = "❌ WOL Error: \(error.localizedDescription)"
                 }
+            }
+        }
+    }
+    
+    func clearCredentials() {
+        disconnect()
+        manager.clearCredentials()
+        commandResult = nil
+        errorMessage = nil
+        commandSuccess = true
+        commandResult = "✅ Credentials cleared. Next connection will require pairing."
+        
+        // Clear result after 3 seconds
+        Task {
+            try? await Task.sleep(nanoseconds: 3_000_000_000)
+            await MainActor.run {
+                commandResult = nil
             }
         }
     }
