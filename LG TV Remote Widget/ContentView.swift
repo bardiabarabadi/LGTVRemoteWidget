@@ -74,7 +74,7 @@ struct ContentView: View {
                                 VStack(spacing: 6) {
                                     Image(systemName: "gamecontroller.fill")
                                         .font(.system(size: 24))
-                                    Text("Gaming")
+                                    Text("PC")
                                         .font(.caption)
                                 }
                                 .foregroundColor(.white)
@@ -85,20 +85,6 @@ struct ContentView: View {
                             .buttonStyle(.plain)
                             .disabled(!viewModel.canSendCommands)
                             
-                            Button(action: { viewModel.sendCommand("ssap://tv/switchInput", ["inputId": "HDMI_2"]) }) {
-                                VStack(spacing: 6) {
-                                    Image(systemName: "rectangle.connected.to.line.below")
-                                        .font(.system(size: 24))
-                                    Text("HDMI 2")
-                                        .font(.caption)
-                                }
-                                .foregroundColor(.primary)
-                                .frame(maxWidth: .infinity, minHeight: 60)
-                                .background(Color(.systemGray5))
-                                .cornerRadius(12)
-                            }
-                            .buttonStyle(.plain)
-                            .disabled(!viewModel.canSendCommands)
                         }
                         
                         Divider()
@@ -536,10 +522,56 @@ final class ConnectionViewModel: ObservableObject {
         status = manager.getConnectionStatus()
     }
     
+    // Auto-connect helper (matching widget behavior)
+    private func connectIfNeededForCommand(enablePointer: Bool = false) async throws {
+        // If already connected, reuse the connection
+        if case .connected = status {
+            return
+        }
+        
+        // Load credentials
+        guard let credentials = manager.loadCredentials() else {
+            throw NSError(domain: "LGTVRemote", code: 1, userInfo: [NSLocalizedDescriptionKey: "TV credentials are missing. Please pair with your TV first."])
+        }
+        
+        // Connect to TV
+        let ip = credentials.ipAddress
+        let mac = credentials.macAddress
+        
+        await MainActor.run {
+            isConnecting = true
+        }
+        
+        do {
+            if let pairingCode = try await manager.connect(ip: ip, mac: mac, enablePointer: enablePointer) {
+                await MainActor.run {
+                    isConnecting = false
+                    status = .pairingRequired(code: pairingCode)
+                }
+                manager.disconnect()
+                throw NSError(domain: "LGTVRemote", code: 2, userInfo: [NSLocalizedDescriptionKey: "Pairing required. Please enter code: \(pairingCode)"])
+            }
+            
+            await MainActor.run {
+                isConnecting = false
+                status = manager.getConnectionStatus()
+            }
+        } catch {
+            await MainActor.run {
+                isConnecting = false
+                status = manager.getConnectionStatus()
+            }
+            throw error
+        }
+    }
+    
     func sendCommand(_ uri: String, _ parameters: [String: Any]? = nil) {
         commandResult = nil
         Task {
             do {
+                // Auto-connect if needed (like widgets do)
+                try await connectIfNeededForCommand()
+                
                 try await manager.sendCommand(uri, parameters: parameters)
                 await MainActor.run {
                     commandSuccess = true
@@ -563,6 +595,9 @@ final class ConnectionViewModel: ObservableObject {
         commandResult = nil
         Task {
             do {
+                // Auto-connect if needed (like widgets do)
+                try await connectIfNeededForCommand(enablePointer: true)
+                
                 try await manager.sendButton(button)
                 await MainActor.run {
                     commandSuccess = true
