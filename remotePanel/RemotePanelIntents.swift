@@ -54,6 +54,27 @@ struct PowerOffIntent: AppIntent {
     }
 }
 
+struct PowerToggleIntent: AppIntent {
+    static var title: LocalizedStringResource = "Power Toggle"
+    static var description = IntentDescription("Toggle TV power: try Wake-on-LAN first, then send power off command.")
+
+    func perform() async throws -> some IntentResult {
+        // Try to turn on first (Wake-on-LAN is safe to send even if TV is already on)
+        try await RemotePanelActionHandler.shared.sendPowerOn()
+        
+        // Small delay to allow WoL packet to be sent
+        try await Task.sleep(nanoseconds: 500_000_000) // 0.5 seconds
+        
+        // Then send power off command (will only work if TV is connected)
+        try await RemotePanelActionHandler.shared.sendPowerOff()
+        
+        await MainActor.run {
+            WidgetCenter.shared.reloadTimelines(ofKind: RemotePanelWidget.kind)
+        }
+        return .result()
+    }
+}
+
 struct PlayIntent: AppIntent {
     static var title: LocalizedStringResource = "Play"
     static var description = IntentDescription("Resume media playback.")

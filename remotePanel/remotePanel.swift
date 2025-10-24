@@ -62,37 +62,9 @@ struct RemotePanelEntryView: View {
     var entry: RemotePanelEntry
     @Environment(\.widgetFamily) private var family
 
-    private var panelBackground: LinearGradient {
-        LinearGradient(
-            colors: [
-                Color(red: 0.133, green: 0.145, blue: 0.173),
-                Color(red: 0.071, green: 0.078, blue: 0.102)
-            ],
-            startPoint: .topLeading,
-            endPoint: .bottomTrailing
-        )
-    }
-
-    private var cardBackground: Color { Color.white.opacity(0.08) }
-    private var cardStroke: Color { Color.white.opacity(0.14) }
-    private var softText: Color { Color.white.opacity(0.92) }
-    private var accentBlue: Color { Color(red: 0.471, green: 0.584, blue: 1.0) }
-    private var accentPurple: Color { Color(red: 0.635, green: 0.518, blue: 1.0) }
-    private var accentGreen: Color { Color(red: 0.427, green: 0.769, blue: 0.608) }
-    private var accentRed: Color { Color(red: 0.875, green: 0.373, blue: 0.427) }
-    private var neutralFill: Color { Color.white.opacity(0.12) }
-
     var body: some View {
-        ZStack {
-            RoundedRectangle(cornerRadius: 24, style: .continuous)
-                .fill(panelBackground)
-            RoundedRectangle(cornerRadius: 24, style: .continuous)
-                .stroke(Color.white.opacity(0.05), lineWidth: 1)
-
-            content
-                .padding(0)
-        }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        content
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 
     @ViewBuilder
@@ -102,9 +74,49 @@ struct RemotePanelEntryView: View {
             largeLayout
         case .systemMedium:
             mediumLayout
+        case .systemSmall:
+            smallLayout
         default:
             mediumLayout
         }
+    }
+    
+    private var smallLayout: some View {
+        ZStack {
+            // Dark background matching other widgets
+            RoundedRectangle(cornerRadius: 20, style: .continuous)
+                .fill(Color(white: 0.15))
+                .shadow(color: Color.black.opacity(0.3), radius: 10, x: 0, y: 4)
+            
+            VStack(spacing: 8) {
+                HStack(spacing: 8) {
+                    smallButton(icon: "power", color: Color(red: 1.0, green: 0.27, blue: 0.23), intent: PowerToggleIntent(), label: "Power Toggle")
+                    smallButton(icon: "plus", color: Color(red: 0.0, green: 0.48, blue: 1.0), intent: VolumeUpIntent(), label: "Volume Up")
+                }
+                
+                HStack(spacing: 8) {
+                    smallButton(icon: "pause.fill", color: Color(red: 0.55, green: 0.55, blue: 0.58), intent: PauseIntent(), label: "Pause")
+                    smallButton(icon: "minus", color: Color(red: 0.0, green: 0.48, blue: 1.0), intent: VolumeDownIntent(), label: "Volume Down")
+                }
+            }
+            .padding(8)
+        }
+    }
+    
+    // Small button component
+    private func smallButton(icon: String, color: Color, intent: some AppIntent, label: String) -> some View {
+        Button(intent: intent) {
+            ZStack {
+                Circle()
+                    .fill(color)
+                
+                Image(systemName: icon)
+                    .font(.system(size: 18, weight: .medium))
+                    .foregroundColor(.white)
+            }
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel(label)
     }
 
     private var mediumLayout: some View {
@@ -114,20 +126,24 @@ struct RemotePanelEntryView: View {
                 .fill(Color(white: 0.15))
                 .shadow(color: Color.black.opacity(0.3), radius: 10, x: 0, y: 4)
             
-            HStack(spacing: 12) {
+            HStack(spacing: 0) {
                 VStack(spacing: 12) {
-                    mediumButton(icon: "power", color: Color(red: 0.3, green: 0.78, blue: 0.4), intent: PowerOnIntent(), label: "Power On")
-                    mediumButton(icon: "power", color: Color(red: 1.0, green: 0.27, blue: 0.23), intent: PowerOffIntent(), label: "Power Off")
+                    mediumButton(icon: "power", color: Color(red: 1.0, green: 0.27, blue: 0.23), intent: PowerToggleIntent(), label: "Power Toggle")
+                    mediumButton(icon: "house.fill", color: Color(white: 0.45), intent: NavHomeIntent(), label: "Home")
                 }
+                
+                Spacer()
+                
+                VStack(spacing: 12) {
+                    mediumButton(icon: "play.fill", color: Color(red: 0.55, green: 0.55, blue: 0.58), intent: PlayIntent(), label: "Play")
+                    mediumButton(icon: "pause.fill", color: Color(red: 0.55, green: 0.55, blue: 0.58), intent: PauseIntent(), label: "Pause")
+                }
+                
+                Spacer()
                 
                 VStack(spacing: 12) {
                     mediumButton(icon: "plus", color: Color(red: 0.0, green: 0.48, blue: 1.0), intent: VolumeUpIntent(), label: "Volume Up")
                     mediumButton(icon: "minus", color: Color(red: 0.0, green: 0.48, blue: 1.0), intent: VolumeDownIntent(), label: "Volume Down")
-                }
-                
-                VStack(spacing: 12) {
-                    mediumButton(icon: "play.fill", color: Color(red: 0.35, green: 0.78, blue: 0.98), intent: PlayIntent(), label: "Play")
-                    mediumButton(icon: "pause.fill", color: Color(red: 0.35, green: 0.78, blue: 0.98), intent: PauseIntent(), label: "Pause")
                 }
             }
             .padding(12)
@@ -168,27 +184,27 @@ struct RemotePanelEntryView: View {
                     
                     // Fixed 4×4 Grid layout
                     Grid(horizontalSpacing: spacing, verticalSpacing: spacing) {
-                        // Row 1: Power On, Power Off, Plex, YouTube
+                        // Row 1: Power Toggle, Plex, YouTube, HDMI 1 (Gaming)
                         GridRow {
-                            gridButton(icon: "power", color: Color(red: 0.3, green: 0.78, blue: 0.4), intent: PowerOnIntent(), label: "Power On")
-                                .frame(width: buttonSize, height: buttonSize)
-                            gridButton(icon: "power", color: Color(red: 1.0, green: 0.27, blue: 0.23), intent: PowerOffIntent(), label: "Power Off")
+                            gridButton(icon: "power", color: Color(red: 1.0, green: 0.27, blue: 0.23), intent: PowerToggleIntent(), label: "Power Toggle")
                                 .frame(width: buttonSize, height: buttonSize)
                             gridButton(icon: "film", color: Color(red: 0.9, green: 0.5, blue: 0.2), intent: LaunchPlexIntent(), label: "Plex")
                                 .frame(width: buttonSize, height: buttonSize)
                             gridButton(icon: "play.rectangle.fill", color: Color(red: 1.0, green: 0.18, blue: 0.18), intent: LaunchYouTubeIntent(), label: "YouTube")
                                 .frame(width: buttonSize, height: buttonSize)
+                            gridButton(icon: "gamecontroller.fill", color: Color(red: 0.3, green: 0.78, blue: 0.4), intent: SwitchHDMI1Intent(), label: "HDMI 1 Gaming")
+                                .frame(width: buttonSize, height: buttonSize)
                         }
                         
-                        // Row 2: Play | ↑ | Home | HDMI 1
+                        // Row 2: Play | ↑ | Home | Empty
                         GridRow {
-                            gridButton(icon: "play.fill", color: Color(red: 0.35, green: 0.78, blue: 0.98), intent: PlayIntent(), label: "Play")
+                            gridButton(icon: "play.fill", color: Color(red: 0.55, green: 0.55, blue: 0.58), intent: PlayIntent(), label: "Play")
                                 .frame(width: buttonSize, height: buttonSize)
                             gridButton(icon: "chevron.up", color: Color(white: 0.35), intent: NavUpIntent(), label: "Up")
                                 .frame(width: buttonSize, height: buttonSize)
-                            gridButton(icon: "house.fill", color: Color(white: 0.35), intent: NavHomeIntent(), label: "Home")
+                            gridButton(icon: "house.fill", color: Color(white: 0.45), intent: NavHomeIntent(), label: "Home")
                                 .frame(width: buttonSize, height: buttonSize)
-                            gridButton(icon: "rectangle.connected.to.line.below", color: Color(red: 0.69, green: 0.32, blue: 0.87), intent: SwitchHDMI1Intent(), label: "HDMI 1")
+                            Color.clear
                                 .frame(width: buttonSize, height: buttonSize)
                         }
                         
@@ -206,11 +222,11 @@ struct RemotePanelEntryView: View {
                         
                         // Row 4: Pause | ↓ | Back | Vol-
                         GridRow {
-                            gridButton(icon: "pause.fill", color: Color(red: 0.35, green: 0.78, blue: 0.98), intent: PauseIntent(), label: "Pause")
+                            gridButton(icon: "pause.fill", color: Color(red: 0.55, green: 0.55, blue: 0.58), intent: PauseIntent(), label: "Pause")
                                 .frame(width: buttonSize, height: buttonSize)
                             gridButton(icon: "chevron.down", color: Color(white: 0.35), intent: NavDownIntent(), label: "Down")
                                 .frame(width: buttonSize, height: buttonSize)
-                            gridButton(icon: "arrow.uturn.left", color: Color(white: 0.35), intent: NavBackIntent(), label: "Back")
+                            gridButton(icon: "arrow.uturn.left", color: Color(white: 0.45), intent: NavBackIntent(), label: "Back")
                                 .frame(width: buttonSize, height: buttonSize)
                             gridButton(icon: "minus", color: Color(red: 0.0, green: 0.48, blue: 1.0), intent: VolumeDownIntent(), label: "Vol-")
                                 .frame(width: buttonSize, height: buttonSize)
@@ -245,172 +261,6 @@ struct RemotePanelEntryView: View {
         .buttonStyle(.plain)
         .accessibilityLabel(label)
     }
-
-    private func card<Content: View>(@ViewBuilder content: () -> Content) -> some View {
-        VStack(alignment: .leading, spacing: 14, content: content)
-            .padding(16)
-            .frame(maxWidth: .infinity)
-            .background(
-                RoundedRectangle(cornerRadius: 18, style: .continuous)
-                    .fill(cardBackground)
-                    .shadow(color: Color.black.opacity(0.4), radius: 18, x: 0, y: 12)
-            )
-            .overlay(
-                RoundedRectangle(cornerRadius: 18, style: .continuous)
-                    .stroke(cardStroke, lineWidth: 1)
-            )
-    }
-
-    private var navigationCluster: some View {
-        card {
-            VStack(spacing: 14) {
-                Spacer(minLength: 0)
-                navButton(symbol: "chevron.up", intent: NavUpIntent(), accessibilityLabel: "Navigate up")
-                HStack(spacing: 14) {
-                    navButton(symbol: "chevron.left", intent: NavLeftIntent(), accessibilityLabel: "Navigate left")
-                    okButton
-                    navButton(symbol: "chevron.right", intent: NavRightIntent(), accessibilityLabel: "Navigate right")
-                }
-                navButton(symbol: "chevron.down", intent: NavDownIntent(), accessibilityLabel: "Navigate down")
-                Spacer(minLength: 0)
-            }
-        }
-    }
-
-    private var quickBackButton: some View {
-        Button(intent: NavBackIntent()) {
-            HStack(spacing: 10) {
-                Image(systemName: "arrow.uturn.left")
-                    .font(.subheadline.weight(.semibold))
-                Text("Back")
-                    .font(.subheadline.weight(.semibold))
-            }
-            .foregroundStyle(softText)
-            .frame(maxWidth: .infinity)
-            .padding(.vertical, 12)
-        }
-        .buttonStyle(.plain)
-        .background(cardBackground, in: Capsule())
-        .overlay(
-            Capsule().stroke(cardStroke, lineWidth: 1)
-        )
-        .accessibilityLabel("Go back")
-    }
-
-    private func circularControl<Content: View>(intent: some AppIntent, background: Color, foreground: Color = .white, accessibilityLabel: String, @ViewBuilder content: () -> Content) -> some View {
-        Button(intent: intent) {
-            content()
-                .font(.title3.weight(.semibold))
-                .frame(width: 56, height: 56)
-        }
-        .buttonStyle(.plain)
-        .foregroundStyle(foreground)
-        .background(
-            Circle()
-                .fill(background)
-        )
-        .overlay(
-            Circle()
-                .stroke(cardStroke.opacity(0.6), lineWidth: 1)
-        )
-        .accessibilityLabel(accessibilityLabel)
-    }
-
-    private func navButton(symbol: String, intent: some AppIntent, accessibilityLabel: String) -> some View {
-        Button(intent: intent) {
-            Image(systemName: symbol)
-                .font(.title3.weight(.semibold))
-                .frame(width: 56, height: 56)
-        }
-        .buttonStyle(.plain)
-        .foregroundStyle(softText)
-        .background(
-            RoundedRectangle(cornerRadius: 16, style: .continuous)
-                .fill(neutralFill)
-        )
-        .overlay(
-            RoundedRectangle(cornerRadius: 16, style: .continuous)
-                .stroke(cardStroke.opacity(0.6), lineWidth: 1)
-        )
-        .accessibilityLabel(accessibilityLabel)
-    }
-
-    private var okButton: some View {
-        Button(intent: NavOkIntent()) {
-            Text("OK")
-                .font(.headline.weight(.semibold))
-                .frame(width: 56, height: 56)
-        }
-        .buttonStyle(.plain)
-        .foregroundStyle(Color.black.opacity(0.85))
-        .background(
-            RoundedRectangle(cornerRadius: 16, style: .continuous)
-                .fill(accentBlue)
-        )
-        .overlay(
-            RoundedRectangle(cornerRadius: 16, style: .continuous)
-                .stroke(cardStroke.opacity(0.3), lineWidth: 1)
-        )
-        .accessibilityLabel("Confirm selection")
-    }
-
-    private func quickActionButton(title: String, accent: Color, intent: some AppIntent) -> some View {
-        Button(intent: intent) {
-            HStack(spacing: 8) {
-                Circle()
-                    .fill(accent)
-                    .frame(width: 8, height: 8)
-                Text(title)
-                    .font(.caption.weight(.semibold))
-                    .foregroundStyle(softText)
-                Spacer(minLength: 0)
-            }
-            .frame(maxWidth: .infinity)
-            .padding(.vertical, 10)
-        }
-        .buttonStyle(.plain)
-        .background(cardBackground, in: Capsule())
-        .overlay(
-            Capsule().stroke(cardStroke, lineWidth: 1)
-        )
-        .accessibilityLabel(title)
-    }
-
-    private var powerOnControl: some View {
-        circularControl(intent: PowerOnIntent(), background: accentGreen.opacity(0.85), accessibilityLabel: "Power on") {
-            Image(systemName: "power")
-        }
-    }
-
-    private var powerOffControl: some View {
-        circularControl(intent: PowerOffIntent(), background: accentRed.opacity(0.85), accessibilityLabel: "Power off") {
-            Image(systemName: "power")
-        }
-    }
-
-    private var playControl: some View {
-        circularControl(intent: PlayIntent(), background: accentBlue.opacity(0.9), accessibilityLabel: "Play") {
-            Image(systemName: "play.fill")
-        }
-    }
-
-    private var pauseControl: some View {
-        circularControl(intent: PauseIntent(), background: accentPurple.opacity(0.9), accessibilityLabel: "Pause") {
-            Image(systemName: "pause.fill")
-        }
-    }
-
-    private var volumeUpControl: some View {
-        circularControl(intent: VolumeUpIntent(), background: neutralFill, accessibilityLabel: "Volume up") {
-            Text("+")
-        }
-    }
-
-    private var volumeDownControl: some View {
-        circularControl(intent: VolumeDownIntent(), background: neutralFill, accessibilityLabel: "Volume down") {
-            Text("-")
-        }
-    }
 }
 
 struct RemotePanelWidget: Widget {
@@ -425,7 +275,7 @@ struct RemotePanelWidget: Widget {
         }
         .configurationDisplayName("LG TV Remote")
         .description("Quick controls for your LG TV.")
-        .supportedFamilies([.systemMedium, .systemLarge])
+        .supportedFamilies([.systemSmall, .systemMedium, .systemLarge])
     }
 }
 
