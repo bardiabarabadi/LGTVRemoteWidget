@@ -20,6 +20,283 @@ struct ContentView: View {
     var body: some View {
         NavigationStack {
             Form {
+                // Remote Control Section - Always visible (moved to top)
+                Section("Remote Control") {
+                    VStack(spacing: 16) {
+                        // Power Toggle (icon only, circular)
+                        Button(action: { viewModel.powerToggle() }) {
+                            Image(systemName: "power")
+                                .font(.system(size: 28, weight: .medium))
+                                .foregroundColor(.white)
+                                .frame(width: 70, height: 70)
+                                .background(Color(red: 1.0, green: 0.27, blue: 0.23))
+                                .clipShape(Circle())
+                        }
+                        .buttonStyle(.plain)
+                        .disabled(!viewModel.canSendCommands)
+                        .frame(maxWidth: .infinity)
+                        
+                        // Apps Row
+                        HStack(spacing: 12) {
+                            Button(action: { viewModel.sendCommand("ssap://system.launcher/launch", ["id": "cdp-30"]) }) {
+                                VStack(spacing: 6) {
+                                    Image(systemName: "film.fill")
+                                        .font(.system(size: 24))
+                                    Text("Plex")
+                                        .font(.caption)
+                                }
+                                .foregroundColor(.white)
+                                .frame(maxWidth: .infinity, minHeight: 60)
+                                .background(Color(red: 0.9, green: 0.5, blue: 0.2))
+                                .cornerRadius(12)
+                            }
+                            .buttonStyle(.plain)
+                            .disabled(!viewModel.canSendCommands)
+                            
+                            Button(action: { viewModel.sendCommand("ssap://system.launcher/launch", ["id": "youtube.leanback.v4"]) }) {
+                                VStack(spacing: 6) {
+                                    Image(systemName: "play.rectangle.fill")
+                                        .font(.system(size: 24))
+                                    Text("YouTube")
+                                        .font(.caption)
+                                }
+                                .foregroundColor(.white)
+                                .frame(maxWidth: .infinity, minHeight: 60)
+                                .background(Color(red: 1.0, green: 0.18, blue: 0.18))
+                                .cornerRadius(12)
+                            }
+                            .buttonStyle(.plain)
+                            .disabled(!viewModel.canSendCommands)
+                        }
+                        
+                        HStack(spacing: 12) {
+                            Button(action: { viewModel.sendCommand("ssap://tv/switchInput", ["inputId": "HDMI_1"]) }) {
+                                VStack(spacing: 6) {
+                                    Image(systemName: "gamecontroller.fill")
+                                        .font(.system(size: 24))
+                                    Text("Gaming")
+                                        .font(.caption)
+                                }
+                                .foregroundColor(.white)
+                                .frame(maxWidth: .infinity, minHeight: 60)
+                                .background(Color(red: 0.3, green: 0.78, blue: 0.4))
+                                .cornerRadius(12)
+                            }
+                            .buttonStyle(.plain)
+                            .disabled(!viewModel.canSendCommands)
+                            
+                            Button(action: { viewModel.sendCommand("ssap://tv/switchInput", ["inputId": "HDMI_2"]) }) {
+                                VStack(spacing: 6) {
+                                    Image(systemName: "rectangle.connected.to.line.below")
+                                        .font(.system(size: 24))
+                                    Text("HDMI 2")
+                                        .font(.caption)
+                                }
+                                .foregroundColor(.primary)
+                                .frame(maxWidth: .infinity, minHeight: 60)
+                                .background(Color(.systemGray5))
+                                .cornerRadius(12)
+                            }
+                            .buttonStyle(.plain)
+                            .disabled(!viewModel.canSendCommands)
+                        }
+                        
+                        Divider()
+                            .padding(.vertical, 4)
+                        
+                        // Navigation Cluster
+                        VStack(spacing: 12) {
+                            HStack(spacing: 12) {
+                                Button(action: { viewModel.sendButton(.home) }) {
+                                    HStack(spacing: 8) {
+                                        Image(systemName: "house.fill")
+                                            .font(.system(size: 18))
+                                        Text("Home")
+                                            .font(.subheadline.weight(.medium))
+                                    }
+                                    .foregroundColor(.primary)
+                                    .frame(maxWidth: .infinity, minHeight: 44)
+                                    .background(Color(.systemGray5))
+                                    .cornerRadius(12)
+                                }
+                                .buttonStyle(.plain)
+                                .disabled(!viewModel.canSendCommands)
+                                
+                                Button(action: { viewModel.sendButton(.back) }) {
+                                    HStack(spacing: 8) {
+                                        Image(systemName: "arrow.uturn.left")
+                                            .font(.system(size: 18))
+                                        Text("Back")
+                                            .font(.subheadline.weight(.medium))
+                                    }
+                                    .foregroundColor(.primary)
+                                    .frame(maxWidth: .infinity, minHeight: 44)
+                                    .background(Color(.systemGray5))
+                                    .cornerRadius(12)
+                                }
+                                .buttonStyle(.plain)
+                                .disabled(!viewModel.canSendCommands)
+                            }
+                            
+                            // D-Pad
+                            VStack(spacing: 10) {
+                                Button(action: { viewModel.sendButton(.up) }) {
+                                    Image(systemName: "chevron.up")
+                                        .font(.system(size: 20, weight: .medium))
+                                        .foregroundColor(.primary)
+                                        .frame(width: 60, height: 60)
+                                        .background(Color(.systemGray6))
+                                        .clipShape(Circle())
+                                }
+                                .buttonStyle(.plain)
+                                .disabled(!viewModel.canSendCommands)
+                                
+                                HStack(spacing: 16) {
+                                    Button(action: { viewModel.sendButton(.left) }) {
+                                        Image(systemName: "chevron.left")
+                                            .font(.system(size: 20, weight: .medium))
+                                            .foregroundColor(.primary)
+                                            .frame(width: 60, height: 60)
+                                            .background(Color(.systemGray6))
+                                            .clipShape(Circle())
+                                    }
+                                    .buttonStyle(.plain)
+                                    .disabled(!viewModel.canSendCommands)
+                                    
+                                    Button(action: { viewModel.sendButton(.enter) }) {
+                                        Text("OK")
+                                            .font(.headline)
+                                            .foregroundColor(.white)
+                                            .frame(width: 70, height: 70)
+                                            .background(Color(red: 0.0, green: 0.48, blue: 1.0))
+                                            .clipShape(Circle())
+                                    }
+                                    .buttonStyle(.plain)
+                                    .disabled(!viewModel.canSendCommands)
+                                    
+                                    Button(action: { viewModel.sendButton(.right) }) {
+                                        Image(systemName: "chevron.right")
+                                            .font(.system(size: 20, weight: .medium))
+                                            .foregroundColor(.primary)
+                                            .frame(width: 60, height: 60)
+                                            .background(Color(.systemGray6))
+                                            .clipShape(Circle())
+                                    }
+                                    .buttonStyle(.plain)
+                                    .disabled(!viewModel.canSendCommands)
+                                }
+                                
+                                Button(action: { viewModel.sendButton(.down) }) {
+                                    Image(systemName: "chevron.down")
+                                        .font(.system(size: 20, weight: .medium))
+                                        .foregroundColor(.primary)
+                                        .frame(width: 60, height: 60)
+                                        .background(Color(.systemGray6))
+                                        .clipShape(Circle())
+                                }
+                                .buttonStyle(.plain)
+                                .disabled(!viewModel.canSendCommands)
+                            }
+                        }
+                        
+                        Divider()
+                            .padding(.vertical, 4)
+                        
+                        // Volume & Playback Controls
+                        VStack(spacing: 16) {
+                            // Volume Section
+                            VStack(spacing: 10) {
+                                Text("Volume")
+                                    .font(.headline)
+                                    .frame(maxWidth: .infinity, alignment: .leading)
+                                
+                                HStack(spacing: 10) {
+                                    Button(action: { viewModel.sendCommand("ssap://audio/volumeDown") }) {
+                                        Image(systemName: "minus")
+                                            .font(.system(size: 20, weight: .medium))
+                                            .foregroundColor(.white)
+                                            .frame(width: 50, height: 50)
+                                            .background(Color(red: 0.0, green: 0.48, blue: 1.0))
+                                            .clipShape(Circle())
+                                    }
+                                    .buttonStyle(.plain)
+                                    .disabled(!viewModel.canSendCommands)
+                                    
+                                    Button(action: { viewModel.sendCommand("ssap://audio/volumeMute") }) {
+                                        Image(systemName: "speaker.slash.fill")
+                                            .font(.system(size: 18, weight: .medium))
+                                            .foregroundColor(.white)
+                                            .frame(maxWidth: .infinity, minHeight: 50)
+                                            .background(Color(red: 0.0, green: 0.48, blue: 1.0))
+                                            .cornerRadius(25)
+                                    }
+                                    .buttonStyle(.plain)
+                                    .disabled(!viewModel.canSendCommands)
+                                    
+                                    Button(action: { viewModel.sendCommand("ssap://audio/volumeUp") }) {
+                                        Image(systemName: "plus")
+                                            .font(.system(size: 20, weight: .medium))
+                                            .foregroundColor(.white)
+                                            .frame(width: 50, height: 50)
+                                            .background(Color(red: 0.0, green: 0.48, blue: 1.0))
+                                            .clipShape(Circle())
+                                    }
+                                    .buttonStyle(.plain)
+                                    .disabled(!viewModel.canSendCommands)
+                                }
+                            }
+                            
+                            // Playback Section
+                            VStack(spacing: 10) {
+                                Text("Playback")
+                                    .font(.headline)
+                                    .frame(maxWidth: .infinity, alignment: .leading)
+                                
+                                HStack(spacing: 12) {
+                                    Button(action: { viewModel.sendCommand("ssap://media.controls/play") }) {
+                                        HStack(spacing: 8) {
+                                            Image(systemName: "play.fill")
+                                                .font(.system(size: 18))
+                                            Text("Play")
+                                                .font(.subheadline.weight(.medium))
+                                        }
+                                        .foregroundColor(.white)
+                                        .frame(maxWidth: .infinity, minHeight: 50)
+                                        .background(Color(red: 0.55, green: 0.55, blue: 0.58))
+                                        .cornerRadius(12)
+                                    }
+                                    .buttonStyle(.plain)
+                                    .disabled(!viewModel.canSendCommands)
+                                    
+                                    Button(action: { viewModel.sendCommand("ssap://media.controls/pause") }) {
+                                        HStack(spacing: 8) {
+                                            Image(systemName: "pause.fill")
+                                                .font(.system(size: 18))
+                                            Text("Pause")
+                                                .font(.subheadline.weight(.medium))
+                                        }
+                                        .foregroundColor(.white)
+                                        .frame(maxWidth: .infinity, minHeight: 50)
+                                        .background(Color(red: 0.55, green: 0.55, blue: 0.58))
+                                        .cornerRadius(12)
+                                    }
+                                    .buttonStyle(.plain)
+                                    .disabled(!viewModel.canSendCommands)
+                                }
+                            }
+                        }
+                        
+                        if let commandResult = viewModel.commandResult {
+                            Text(commandResult)
+                                .font(.caption)
+                                .foregroundStyle(viewModel.commandSuccess ? .green : .red)
+                                .frame(maxWidth: .infinity, alignment: .center)
+                                .padding(.top, 8)
+                        }
+                    }
+                    .padding(.vertical, 8)
+                }
+                
                 Section("TV Details") {
                     TextField("IP Address", text: $viewModel.ipAddress)
                         .keyboardType(.decimalPad)
@@ -66,13 +343,6 @@ struct ContentView: View {
                         Label("Clear Credentials (Force Re-Pair)", systemImage: "trash.circle")
                     }
                     .disabled(viewModel.isConnecting)
-                    
-                    Button(action: { viewModel.powerOn() }) {
-                        Label("Wake TV (WOL)", systemImage: "power.circle")
-                    }
-                    .buttonStyle(.borderedProminent)
-                    .tint(.green)
-                    .disabled(viewModel.isConnecting)
                 }
 
                 if let message = viewModel.errorMessage {
@@ -81,144 +351,8 @@ struct ContentView: View {
                             .foregroundStyle(.red)
                     }
                 }
-                
-                // Command Testing Section
-                if viewModel.isConnected {
-                    Section("Test Commands") {
-                        VStack(spacing: 16) {
-                            // Volume Controls
-                            HStack(spacing: 12) {
-                                Button(action: { viewModel.sendCommand("ssap://audio/volumeUp") }) {
-                                    Label("Vol +", systemImage: "speaker.wave.3")
-                                        .frame(maxWidth: .infinity)
-                                }
-                                .buttonStyle(.bordered)
-                                
-                                Button(action: { viewModel.sendCommand("ssap://audio/volumeDown") }) {
-                                    Label("Vol −", systemImage: "speaker.wave.1")
-                                        .frame(maxWidth: .infinity)
-                                }
-                                .buttonStyle(.bordered)
-                                
-                                Button(action: { viewModel.sendCommand("ssap://audio/setMute", ["mute": true]) }) {
-                                    Label("Mute", systemImage: "speaker.slash")
-                                        .frame(maxWidth: .infinity)
-                                }
-                                .buttonStyle(.bordered)
-                            }
-                            
-                            // HDMI Inputs
-                            HStack(spacing: 12) {
-                                Button(action: { viewModel.sendCommand("ssap://tv/switchInput", ["inputId": "HDMI_1"]) }) {
-                                    Text("HDMI 1")
-                                        .frame(maxWidth: .infinity)
-                                }
-                                .buttonStyle(.bordered)
-                                
-                                Button(action: { viewModel.sendCommand("ssap://tv/switchInput", ["inputId": "HDMI_2"]) }) {
-                                    Text("HDMI 2")
-                                        .frame(maxWidth: .infinity)
-                                }
-                                .buttonStyle(.bordered)
-                                
-                                Button(action: { viewModel.sendCommand("ssap://tv/switchInput", ["inputId": "HDMI_3"]) }) {
-                                    Text("HDMI 3")
-                                        .frame(maxWidth: .infinity)
-                                }
-                                .buttonStyle(.bordered)
-                            }
-                            
-                            // App Launchers
-                            HStack(spacing: 12) {
-                                Button(action: { viewModel.sendCommand("ssap://system.launcher/launch", ["id": "cdp-30"]) }) {
-                                    Label("Plex", systemImage: "play.tv")
-                                        .frame(maxWidth: .infinity)
-                                }
-                                .buttonStyle(.bordered)
-                                .tint(.orange)
-                                
-                                Button(action: { viewModel.sendCommand("ssap://system.launcher/launch", ["id": "youtube.leanback.v4"]) }) {
-                                    Label("YouTube", systemImage: "play.rectangle")
-                                        .frame(maxWidth: .infinity)
-                                }
-                                .buttonStyle(.bordered)
-                                .tint(.red)
-                            }
-                            
-                            // Navigation Controls
-                            VStack(spacing: 8) {
-                                // Home and Back buttons (using system.launcher)
-                                HStack(spacing: 12) {
-                                    Button(action: { viewModel.sendButton(.home) }) {
-                                        Label("Home", systemImage: "house")
-                                            .frame(maxWidth: .infinity)
-                                    }
-                                    .buttonStyle(.bordered)
-                                    
-                                    Button(action: { viewModel.sendButton(.back) }) {
-                                        Label("Back", systemImage: "arrow.uturn.backward")
-                                            .frame(maxWidth: .infinity)
-                                    }
-                                    .buttonStyle(.bordered)
-                                }
-                                
-                                // Arrow D-Pad (using pointer input socket)
-                                Button(action: { viewModel.sendButton(.up) }) {
-                                    Image(systemName: "chevron.up")
-                                        .frame(width: 44, height: 44)
-                                }
-                                .buttonStyle(.bordered)
-                                
-                                // Left, OK, Right
-                                HStack(spacing: 12) {
-                                    Button(action: { viewModel.sendButton(.left) }) {
-                                        Image(systemName: "chevron.left")
-                                            .frame(width: 44, height: 44)
-                                    }
-                                    .buttonStyle(.bordered)
-                                    
-                                    Button(action: { viewModel.sendButton(.enter) }) {
-                                        Text("OK")
-                                            .font(.headline)
-                                            .frame(width: 44, height: 44)
-                                    }
-                                    .buttonStyle(.borderedProminent)
-                                    
-                                    Button(action: { viewModel.sendButton(.right) }) {
-                                        Image(systemName: "chevron.right")
-                                            .frame(width: 44, height: 44)
-                                    }
-                                    .buttonStyle(.bordered)
-                                }
-                                
-                                // Down arrow
-                                Button(action: { viewModel.sendButton(.down) }) {
-                                    Image(systemName: "chevron.down")
-                                        .frame(width: 44, height: 44)
-                                }
-                                .buttonStyle(.bordered)
-                            }
-                            .frame(maxWidth: .infinity)
-                            
-                            // Power Off only (Power On is in Connection section)
-                            Button(role: .destructive, action: { viewModel.sendCommand("ssap://system/turnOff") }) {
-                                Label("Power Off", systemImage: "power.circle.fill")
-                                    .frame(maxWidth: .infinity)
-                            }
-                            .buttonStyle(.borderedProminent)
-                        }
-                        .padding(.vertical, 8)
-                        
-                        if let commandResult = viewModel.commandResult {
-                            Text(commandResult)
-                                .font(.caption)
-                                .foregroundStyle(viewModel.commandSuccess ? .green : .red)
-                                .frame(maxWidth: .infinity, alignment: .center)
-                        }
-                    }
-                }
             }
-            .navigationTitle("LG TV Setup")
+            .navigationTitle("LG TV Remote")
             .toolbar {
                 ToolbarItemGroup(placement: .keyboard) {
                     Spacer()
@@ -279,6 +413,11 @@ final class ConnectionViewModel: ObservableObject {
     var isConnected: Bool {
         if case .connected = status { return true }
         return false
+    }
+    
+    var canSendCommands: Bool {
+        // Allow sending commands even when disconnected for Wake-on-LAN
+        return !isConnecting
     }
 
     var statusText: String {
@@ -468,6 +607,39 @@ final class ConnectionViewModel: ObservableObject {
         }
     }
     
+    func powerToggle() {
+        commandResult = nil
+        let mac = macAddress.trimmingCharacters(in: .whitespacesAndNewlines)
+        let ip = ipAddress.trimmingCharacters(in: .whitespacesAndNewlines)
+        Task {
+            do {
+                // Try Wake-on-LAN first
+                try await manager.wakeTV(mac: mac, ip: ip)
+                
+                // Small delay
+                try await Task.sleep(nanoseconds: 500_000_000)
+                
+                // Then try power off (will only work if connected)
+                try await manager.sendCommand("ssap://system/turnOff")
+                
+                await MainActor.run {
+                    commandSuccess = true
+                    commandResult = "✅ Power toggle sent"
+                }
+                // Clear result after 3 seconds
+                try? await Task.sleep(nanoseconds: 3_000_000_000)
+                await MainActor.run {
+                    commandResult = nil
+                }
+            } catch {
+                await MainActor.run {
+                    commandSuccess = false
+                    commandResult = "❌ Error: \(error.localizedDescription)"
+                }
+            }
+        }
+    }
+    
     func clearCredentials() {
         disconnect()
         manager.clearCredentials()
@@ -525,4 +697,8 @@ private struct PairingCodeSheet: View {
             .onAppear { pairingFieldFocused = true }
         }
     }
+}
+
+#Preview {
+    ContentView()
 }
