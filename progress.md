@@ -1,102 +1,87 @@
 # LG TV Remote Widget - Progress Tracker
 
-## 📋 Quick Checklist
+## Current Status: ✅ Step 5.5 COMPLETE - Ready for Step 6
 
-### Step 1: **Current Status:** 🎉 **MAJOR FIX - Pointer Input Socket Implemented!**
+**Last Updated**: October 24, 2025, 1:30 AM
 
-- Oct 24 (12:15 AM): **🚀 BREAKTHROUGH!** Implemented correct webOS 22/23 navigation protocol:
-  - ✅ **WOL Fixed:** No longer hangs app - removed blocking `group.wait()` call
-  - ✅ **Navigation Fixed:** Implemented pointer input socket (second WebSocket)
-  - ✅ Created `PointerInputClient` to manage pointer socket connection
-  - ✅ Arrow keys, OK, Back now use button events, not SSAP commands
-  - ✅ Auto-connects pointer socket after main connection
-  - **Next:** Test on device to verify navigation and WOL work!
+### Recent Achievements
+- ✅ **All Core Functionality Working**
+  - WebSocket connection and pairing
+  - Volume controls (up/down/mute)
+  - HDMI input switching (1/2/3)
+  - App launching (Plex, YouTube)
+  - Navigation controls (arrows, OK, back, home)
+  - Power controls (on via WOL, off via SSAP)
 
-- Oct 23 (11:55 PM): **🔧 Bug Fixes Applied!**
-  - ✅ **Speed:** Removed all diagnostics, Bonjour discovery, and test code from connect() - should be much faster now!
-  - ✅ **Navigation:** Fixed 404 errors - changed from `com.webos.service.ime` to `com.webos.service.tv.keymanager/processKeyInput`
-  - ✅ **Back Button:** Added Return/Back button using BACK key
-  - ✅ **Power On:** Enhanced Wake-on-LAN to send to both broadcast and specific IP address
-  - **Next:** Test on device to verify all fixes work
+- ✅ **Code Cleanup Complete**
+  - Removed verbose debug logging
+  - Removed unnecessary wait/sleep calls
+  - Kept only essential error handling
+  - Clean, production-ready codebase
 
-- Oct 23 (11:45 PM): **🎉 COMMANDS VERIFIED!** All buttons tested and working on device:
-  - ✅ Volume Up/Down, Mute - Working perfectly
-  - ✅ HDMI 1/2/3 switching - All work
-  - ✅ Plex & YouTube app launching - Both work
-  - ✅ Arrow keys (↑↓←→) & OK button - Navigation works
-  - ✅ Power Off via SSAP - Works
-  - ✅ Power On via Wake-on-LAN - Implemented and ready
-  - **Next:** Move to Step 6 - Widget Extension
+- ✅ **Documentation Consolidated**
+  - Created IMPLEMENTATION_NOTES.md with all key findings
+  - Kept Plan.md and progress.md
+  - Removed temporary debugging documents
 
-- Oct 23 (11:30 PM): **🎮 Step 5.5 Complete!** Implemented command testing UI in main app:
-  - ✅ Added test buttons section (Volume, HDMI, Apps, Power)
-  - ✅ Command sending with visual feedback (✅/❌ messages)
-  - ✅ Error handling and auto-clearing results
-  - ✅ All commands ready
+---
 
-- Oct 23 (11:15 PM): **📋 Documentation cleaned up!** Removed outdated "wait for hello" references from SSAP protocol notes. Added Step 5.5 for command testing in main app before moving to widget implementation.
+## 📋 Implementation Checklist
 
-- Oct 23 (11:00 PM): **🎉 SUCCESS!** First successful pairing with LG webOS 23 TV! The connection is fully working:
-  - ✅ Secure WebSocket (wss://10.0.0.14:3001/) connected
-  - ✅ Self-signed certificate accepted automatically
-  - ✅ Registration sent and acknowledged by TV
-  - ✅ TV showed "Allow this device?" prompt (PROMPT pairing mode)
-  - ✅ User accepted → received client-key `9ba71d29c353cf0bdcc00c4b0a8cc189`
-  - ✅ Credentials stored in Keychain
-  - **Next:** Implement and test command sending (Step 5.5) [x] Enable "LG Connect Apps" on TV
+### Step 1: Environment Setup ✅
+- [x] Enable "LG Connect Apps" on TV
 - [x] Get TV IP address: 10.0.0.14
 - [x] Get TV MAC address: 34:E6:E6:F9:05:50
-- [x] Test network connectivity (ping TV)
+- [x] Test network connectivity
 
-### Step 2: Xcode Setup
+### Step 2: Xcode Setup ✅
 - [x] Set deployment target to iOS 17.0 
 - [x] Configure signing & team
 - [x] Add network permissions to Info.plist
 - [x] Connect test device
 
-### Step 3: Shared Framework
+### Step 3: Shared Framework ✅
 - [x] Create `LGTVControl` framework target
-- [x] Implement WebSocket client
-- [x] Add SSAP protocol handler (message types; full pairing/flow in Step 4)
-- [x] Add Keychain wrapper
-- [x] Add Wake-on-LAN sender
-- [x] Setup App Group sharing (entitlements + UserDefaults suite)
+- [x] Implement WebSocket client (SSAPWebSocketClient)
+- [x] Add SSAP protocol handler
+- [x] Add Keychain wrapper (KeychainManager)
+- [x] Add Wake-on-LAN sender (WakeOnLAN)
+- [x] Setup App Group sharing (AppGroupManager)
 
-### Step 4: SSAP Pairing Flow
-- [x] Expand SSAP request/response models for registration
-- [x] Implement WebSocket register & pairing handling
+### Step 4: SSAP Pairing Flow ✅
+- [x] Implement SSAP request/response models
+- [x] Implement WebSocket register & pairing
 - [x] Update control manager connect/pair APIs
-- [x] ✅ **Run on-device pairing test - SUCCESSFUL!**
+- [x] **Successful on-device pairing test**
+- [x] Client-key: `9ba71d29c353cf0bdcc00c4b0a8cc189`
 
-### Step 5: Main App
+### Step 5: Main App ✅
 - [x] Build SwiftUI setup screen
 - [x] Add IP/MAC input fields
 - [x] Wire up pairing prompts in UI
-- [x] ✅ **Test WebSocket connection from UI - WORKING!**
-- [x] ✅ **Persist credentials via Keychain from UI - WORKING!**
+- [x] **WebSocket connection working from UI**
+- [x] **Credentials persisted via Keychain**
 
-### Step 5.5: Command Testing in Main App ✅
-- [x] Implement `sendCommand()` method in LGTVControlManager
-- [x] Add test buttons to ContentView for:
-  - [x] Volume Up/Down
-  - [x] Mute toggle
-  - [x] HDMI input switching (HDMI 1, 2, 3)
+### Step 5.5: Command Testing & Navigation ✅
+- [x] Implement `sendCommand()` method
+- [x] Implement pointer input socket for navigation (webOS 22/23)
+- [x] Add test buttons for all controls:
+  - [x] Volume Up/Down/Mute
+  - [x] HDMI input switching (1, 2, 3)
   - [x] App launching (Plex, YouTube)
-  - [x] Navigation controls (Arrow keys + OK button)
-  - [x] Power controls (Power On via WOL, Power Off)
-- [x] **Test all commands on device** ✅ ALL WORKING!
-- [x] Add error handling and user feedback
-- [x] Verify client-key works for subsequent connections
+  - [x] Navigation (arrows, OK, back, home)
+  - [x] Power (WOL on, SSAP off)
+- [x] **All commands tested and working**
+- [x] Add "Clear Credentials" for re-pairing
+- [x] Error handling and user feedback
 
-**Test Results (Oct 23, 11:45 PM):**
-- ✅ All volume controls work perfectly
-- ✅ HDMI input switching works
-- ✅ Plex and YouTube launch successfully
-- ✅ Arrow keys and OK button work for navigation
-- ✅ Power Off works
-- ✅ Power On implemented with Wake-on-LAN
+**Key Discoveries:**
+- webOS 22/23 requires TWO WebSocket connections
+- Main socket for commands, pointer socket for navigation
+- Permission `CONTROL_INPUT_TEXT` required for pointer socket
+- iOS requires direct IP for WOL (no broadcast)
 
-### Step 6: Widget Extension
+### Step 6: Widget Extension 🎯 NEXT
 - [ ] Create Widget Extension target
 - [ ] Setup App Intents (iOS 17+)
 - [ ] Design widget layout (medium/large)
@@ -142,3 +127,30 @@
 - Oct 23 (PM-AM): Initial WebSocket implementation, race condition fixes, comprehensive logging.
 
 **Last Updated:** Oct 23, 2025 11:00 PM
+
+---
+
+## Technical Summary
+
+### Working Features ✅
+- **Connection**: WebSocket (wss://) with self-signed cert support
+- **Pairing**: PROMPT mode, client-key storage in Keychain
+- **Volume**: Up, Down, Mute
+- **Input**: HDMI 1/2/3 switching
+- **Apps**: Launch Plex, YouTube
+- **Navigation**: Arrow keys, OK, Back, Home (via pointer socket)
+- **Power**: On (WOL), Off (SSAP)
+- **Credentials**: Secure Keychain storage, re-pairing support
+
+### Key Implementations
+- **Two WebSocket Architecture**: Main SSAP + Pointer Input (webOS 22/23)
+- **Wake-on-LAN**: Direct IP via Network framework (iOS-compatible)
+- **Permission Management**: Complete manifest with CONTROL_INPUT_TEXT
+- **Error Handling**: Graceful fallbacks, alternative APIs
+
+### TV Configuration
+- **Model**: LG 65UT7000
+- **webOS**: 23.23.30
+- **IP**: 10.0.0.14
+- **MAC**: 34:E6:E6:F9:05:50
+- **Client Key**: 9ba71d29c353cf0bdcc00c4b0a8cc189
