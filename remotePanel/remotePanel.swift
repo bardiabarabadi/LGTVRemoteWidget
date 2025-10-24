@@ -108,33 +108,47 @@ struct RemotePanelEntryView: View {
     }
 
     private var mediumLayout: some View {
-        card {
-            HStack(spacing: 16) {
+        ZStack {
+            // Dark background matching large widget
+            RoundedRectangle(cornerRadius: 20, style: .continuous)
+                .fill(Color(white: 0.15))
+                .shadow(color: Color.black.opacity(0.3), radius: 10, x: 0, y: 4)
+            
+            HStack(spacing: 12) {
                 VStack(spacing: 12) {
-                    powerOnControl
-                    powerOffControl
+                    mediumButton(icon: "power", color: Color(red: 0.3, green: 0.78, blue: 0.4), intent: PowerOnIntent(), label: "Power On")
+                    mediumButton(icon: "power", color: Color(red: 1.0, green: 0.27, blue: 0.23), intent: PowerOffIntent(), label: "Power Off")
                 }
-
-                Divider()
-                    .frame(width: 1)
-                    .background(cardStroke.opacity(0.4))
-
-                VStack(spacing: 10) {
-                    volumeUpControl
-                    volumeDownControl
-                }
-
-                Divider()
-                    .frame(width: 1)
-                    .background(cardStroke.opacity(0.4))
-
+                
                 VStack(spacing: 12) {
-                    playControl
-                    pauseControl
+                    mediumButton(icon: "plus", color: Color(red: 0.0, green: 0.48, blue: 1.0), intent: VolumeUpIntent(), label: "Volume Up")
+                    mediumButton(icon: "minus", color: Color(red: 0.0, green: 0.48, blue: 1.0), intent: VolumeDownIntent(), label: "Volume Down")
+                }
+                
+                VStack(spacing: 12) {
+                    mediumButton(icon: "play.fill", color: Color(red: 0.35, green: 0.78, blue: 0.98), intent: PlayIntent(), label: "Play")
+                    mediumButton(icon: "pause.fill", color: Color(red: 0.35, green: 0.78, blue: 0.98), intent: PauseIntent(), label: "Pause")
                 }
             }
-            .frame(maxWidth: .infinity)
+            .padding(12)
         }
+    }
+    
+    // Medium button component matching large widget style
+    private func mediumButton(icon: String, color: Color, intent: some AppIntent, label: String) -> some View {
+        Button(intent: intent) {
+            ZStack {
+                Circle()
+                    .fill(color)
+                
+                Image(systemName: icon)
+                    .font(.system(size: 22, weight: .medium))
+                    .foregroundColor(.white)
+            }
+            .frame(width: 56, height: 56)
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel(label)
     }
 
     private var largeLayout: some View {
