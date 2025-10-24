@@ -191,9 +191,19 @@ final class ConnectionViewModel: ObservableObject {
                     isConnecting = false
                     status = manager.getConnectionStatus()
                     pendingPairingCode = pairingCode
+                    
+                    // Only show pairing sheet if we have a code (PIN mode)
+                    // If no code, TV is using PROMPT mode (just Allow/Deny on TV)
                     if statusRequiresPairing(status) {
-                        pairingCodeInput = pairingCode ?? ""
-                        showPairingSheet = true
+                        if let code = pairingCode {
+                            // PIN mode - show code entry sheet
+                            pairingCodeInput = code
+                            showPairingSheet = true
+                        } else {
+                            // PROMPT mode - just wait for user to accept on TV
+                            // Status will update automatically when accepted
+                            print("[ContentView] Waiting for user to accept pairing on TV...")
+                        }
                     }
                 }
             } catch {

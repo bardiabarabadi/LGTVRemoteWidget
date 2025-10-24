@@ -26,14 +26,14 @@
 - [x] Expand SSAP request/response models for registration
 - [x] Implement WebSocket register & pairing handling
 - [x] Update control manager connect/pair APIs
-- [ ] Run on-device pairing test (awaiting user)
+- [x] ✅ **Run on-device pairing test - SUCCESSFUL!**
 
 ### Step 5: Main App
 - [x] Build SwiftUI setup screen
 - [x] Add IP/MAC input fields
 - [x] Wire up pairing prompts in UI
-- [ ] Test WebSocket connection from UI
-- [ ] Persist credentials via Keychain from UI
+- [x] ✅ **Test WebSocket connection from UI - WORKING!**
+- [x] ✅ **Persist credentials via Keychain from UI - WORKING!**
 
 ### Step 6: Widget Extension
 - [ ] Create Widget Extension target
@@ -63,7 +63,21 @@
 
 ---
 
-**Current Status:** 🚧 In Progress
-- Oct 23: Updated WebSocket client to send register JSON as text frames to prevent the TV from closing the socket; awaiting on-device validation.
+**Current Status:** ✅ **PAIRING SUCCESSFUL - Core Connection Working!**
 
-**Last Updated:** Oct 23, 2025
+- Oct 23 (11:00 PM): **� SUCCESS!** First successful pairing with LG webOS 23 TV! The connection is fully working:
+  - ✅ Secure WebSocket (wss://10.0.0.14:3001/) connected
+  - ✅ Self-signed certificate accepted automatically
+  - ✅ Registration sent and acknowledged by TV
+  - ✅ TV showed "Allow this device?" prompt (PROMPT pairing mode)
+  - ✅ User accepted → received client-key `9ba71d29c353cf0bdcc00c4b0a8cc189`
+  - ✅ Credentials stored in Keychain
+  - **Next:** Test sending actual commands (volume, power, etc.)
+  
+- Oct 23 (Late Evening): **🎯 BREAKTHROUGH!** Discovered webOS 23 requires wss:// on port 3001. Implemented secure WebSocket, certificate handling, and PROMPT mode pairing (wait for second "registered" message).
+
+- Oct 23 (Evening): Added diagnostics, Bonjour discovery, raw WebSocket testing. Discovered webOS 23 doesn't send "hello" message (older protocol behavior).
+
+- Oct 23 (PM-AM): Initial WebSocket implementation, race condition fixes, comprehensive logging.
+
+**Last Updated:** Oct 23, 2025 11:00 PM
