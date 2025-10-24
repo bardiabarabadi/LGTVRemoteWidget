@@ -6,6 +6,9 @@ public final class PointerInputClient: NSObject {
     private var task: URLSessionWebSocketTask?
     private let queue = DispatchQueue(label: "com.lgtv.pointerinput", qos: .userInitiated)
     private var isConnected = false
+    private var connectionContinuation: CheckedContinuation<Void, Error>?
+    private var connectionTimeoutTask: Task<Void, Never>?
+    private let connectionTimeoutNanoseconds: UInt64 = 5 * 1_000_000_000
     
     public override init() {
         super.init()
@@ -27,8 +30,35 @@ public final class PointerInputClient: NSObject {
         
         // Start receiving messages to keep connection alive
         receiveMessage(task: newTask)
-        
-        try await Task.sleep(nanoseconds: 1_000_000_000)
+
+        try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Void, Error>) in
+            queue.async {
+                if self.connectionContinuation != nil {
+                    continuation.resume(throwing: PointerInputError.alreadyConnecting)
+                    return
+                }
+
+                self.connectionContinuation = continuation
+                self.connectionTimeoutTask?.cancel()
+                self.connectionTimeoutTask = Task { [weak self] in
+                    guard let self else { return }
+                    do {
+                        try await Task.sleep(nanoseconds: self.connectionTimeoutNanoseconds)
+                    } catch {
+                        return
+                    }
+                    self.queue.async {
+                        if let continuation = self.connectionContinuation {
+                            self.connectionContinuation = nil
+                            continuation.resume(throwing: PointerInputError.connectTimeout)
+                        }
+                        self.connectionTimeoutTask = nil
+                        self.task?.cancel(with: .goingAway, reason: nil)
+                    }
+                }
+            }
+        }
+
         isConnected = true
     }
     
@@ -64,6 +94,14 @@ public final class PointerInputClient: NSObject {
         task?.cancel(with: .goingAway, reason: nil)
         task = nil
         isConnected = false
+        queue.async {
+            self.connectionTimeoutTask?.cancel()
+            self.connectionTimeoutTask = nil
+            if let continuation = self.connectionContinuation {
+                self.connectionContinuation = nil
+                continuation.resume(throwing: PointerInputError.notConnected)
+            }
+        }
     }
     
     // MARK: - Button Types
@@ -91,12 +129,16 @@ public final class PointerInputClient: NSObject {
         case notConnected
         case invalidSocketPath
         case sendFailed(String)
+        case connectTimeout
+        case alreadyConnecting
         
         public var errorDescription: String? {
             switch self {
             case .notConnected: return "Pointer socket not connected"
             case .invalidSocketPath: return "Invalid pointer socket path"
             case .sendFailed(let msg): return "Failed to send button: \(msg)"
+            case .connectTimeout: return "Pointer socket connection timed out"
+            case .alreadyConnecting: return "Pointer socket connection already in progress"
             }
         }
     }
@@ -104,11 +146,27 @@ public final class PointerInputClient: NSObject {
 
 extension PointerInputClient: URLSessionWebSocketDelegate {
     public func urlSession(_ session: URLSession, webSocketTask: URLSessionWebSocketTask, didOpenWithProtocol protocol: String?) {
-        // Socket opened
+        queue.async {
+            self.isConnected = true
+            self.connectionTimeoutTask?.cancel()
+            self.connectionTimeoutTask = nil
+            if let continuation = self.connectionContinuation {
+                self.connectionContinuation = nil
+                continuation.resume()
+            }
+        }
     }
     
     public func urlSession(_ session: URLSession, webSocketTask: URLSessionWebSocketTask, didCloseWith closeCode: URLSessionWebSocketTask.CloseCode, reason: Data?) {
         isConnected = false
+        queue.async {
+            self.connectionTimeoutTask?.cancel()
+            self.connectionTimeoutTask = nil
+            if let continuation = self.connectionContinuation {
+                self.connectionContinuation = nil
+                continuation.resume(throwing: PointerInputError.notConnected)
+            }
+        }
     }
     
     public func urlSession(_ session: URLSession, task: URLSessionTask, didReceive challenge: URLAuthenticationChallenge, completionHandler: @escaping (URLSession.AuthChallengeDisposition, URLCredential?) -> Void) {

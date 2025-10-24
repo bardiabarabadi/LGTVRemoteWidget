@@ -6,8 +6,6 @@ actor RemotePanelActionHandler {
     static let shared = RemotePanelActionHandler()
 
     private let controlManager = LGTVControlManager.shared
-    private var disconnectTask: Task<Void, Never>?
-    private let disconnectDelayNanoseconds: UInt64 = 1 * 1_000_000_000
     private let logger = Logger(subsystem: "com.DaraConsultingInc.LGTVRemoteWidget", category: "RemotePanelAction")
 
     func sendVolumeUp() async throws {
@@ -70,9 +68,9 @@ actor RemotePanelActionHandler {
 
         let credentials = try loadCredentials()
         let connectionStart = Date()
-        let alreadyConnected = try await connectIfNeeded(credentials: credentials, enablePointer: false)
+    var connectionReused = try await connectIfNeeded(credentials: credentials, enablePointer: false)
         let connectDuration = Date().timeIntervalSince(connectionStart)
-        logger.log("Connection ready in \(connectDuration, format: .fixed(precision: 2))s (reused: \(alreadyConnected, privacy: .public))")
+        logger.log("Connection ready in \(connectDuration, format: .fixed(precision: 2))s (reused: \(connectionReused, privacy: .public))")
 
         do {
             try await controlManager.sendCommand(uri, parameters: parameters)
@@ -81,9 +79,9 @@ actor RemotePanelActionHandler {
                 controlManager.disconnect()
 
                 let reconnectStart = Date()
-                let reused = try await connectIfNeeded(credentials: credentials, enablePointer: false)
+                connectionReused = try await connectIfNeeded(credentials: credentials, enablePointer: false)
                 let reconnectDuration = Date().timeIntervalSince(reconnectStart)
-                logger.log("Reconnect completed in \(reconnectDuration, format: .fixed(precision: 2))s (reused: \(reused, privacy: .public))")
+                logger.log("Reconnect completed in \(reconnectDuration, format: .fixed(precision: 2))s (reused: \(connectionReused, privacy: .public))")
 
                 do {
                     try await controlManager.sendCommand(uri, parameters: parameters)
@@ -95,7 +93,6 @@ actor RemotePanelActionHandler {
             }
         }
 
-        scheduleDisconnect(startingFromConnected: alreadyConnected)
         let totalDuration = Date().timeIntervalSince(start)
         logger.log("Intent finished in \(totalDuration, format: .fixed(precision: 2))s")
     }
@@ -106,9 +103,9 @@ actor RemotePanelActionHandler {
 
         let credentials = try loadCredentials()
         let connectionStart = Date()
-        let alreadyConnected = try await connectIfNeeded(credentials: credentials, enablePointer: connectWithPointer)
+    var connectionReused = try await connectIfNeeded(credentials: credentials, enablePointer: connectWithPointer)
         let connectDuration = Date().timeIntervalSince(connectionStart)
-        logger.log("Connection ready in \(connectDuration, format: .fixed(precision: 2))s (reused: \(alreadyConnected, privacy: .public))")
+        logger.log("Connection ready in \(connectDuration, format: .fixed(precision: 2))s (reused: \(connectionReused, privacy: .public))")
 
         do {
             try await block(controlManager)
@@ -117,9 +114,9 @@ actor RemotePanelActionHandler {
                 controlManager.disconnect()
 
                 let reconnectStart = Date()
-                let reused = try await connectIfNeeded(credentials: credentials, enablePointer: connectWithPointer)
+                connectionReused = try await connectIfNeeded(credentials: credentials, enablePointer: connectWithPointer)
                 let reconnectDuration = Date().timeIntervalSince(reconnectStart)
-                logger.log("Reconnect completed in \(reconnectDuration, format: .fixed(precision: 2))s (reused: \(reused, privacy: .public))")
+                logger.log("Reconnect completed in \(reconnectDuration, format: .fixed(precision: 2))s (reused: \(connectionReused, privacy: .public))")
 
                 do {
                     try await block(controlManager)
@@ -131,7 +128,6 @@ actor RemotePanelActionHandler {
             }
         }
 
-        scheduleDisconnect(startingFromConnected: alreadyConnected)
         let totalDuration = Date().timeIntervalSince(start)
         logger.log("Intent finished in \(totalDuration, format: .fixed(precision: 2))s")
     }
@@ -145,8 +141,6 @@ actor RemotePanelActionHandler {
 
     @discardableResult
     private func connectIfNeeded(credentials: TVCredentials, enablePointer: Bool) async throws -> Bool {
-        disconnectTask?.cancel()
-
         if case .connected = controlManager.getConnectionStatus() {
             logger.log("Reusing existing connection")
             return true
@@ -166,27 +160,6 @@ actor RemotePanelActionHandler {
         return false
     }
 
-    private func scheduleDisconnect(startingFromConnected _: Bool) {
-        disconnectTask?.cancel()
-        disconnectTask = Task { [weak self] in
-            guard let self else { return }
-            let delay = self.disconnectDelayNanoseconds
-            if delay > 0 {
-                do {
-                    try await Task.sleep(nanoseconds: delay)
-                } catch {
-                    return
-                }
-            }
-            guard !Task.isCancelled else { return }
-            await self.performDisconnect()
-        }
-    }
-
-    private func performDisconnect() {
-        disconnectTask = nil
-        controlManager.disconnect()
-    }
 }
 
 enum RemotePanelError: Error, LocalizedError {
