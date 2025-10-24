@@ -194,28 +194,14 @@ public final class SSAPWebSocketClient: NSObject {
                         }
                     }
                 } else {
-                    // webOS 23 might not send hello - try sending registration after a brief delay
-                    print("[SSAPWebSocket] ⏳ Waiting 2 seconds for TV 'hello' message...")
-                    print("[SSAPWebSocket] (If no hello received, will send registration anyway - webOS 23 behavior)")
-                    self.pendingRegistrationPayload = payload
-                    
-                    // Set a shorter timer to send registration if no hello received
-                    DispatchQueue.global().asyncAfter(deadline: .now() + 2.0) {
-                        self.queue.async {
-                            if let pendingPayload = self.pendingRegistrationPayload {
-                                print("[SSAPWebSocket] ⚠️ No 'hello' received after 2 seconds")
-                                print("[SSAPWebSocket] 🚀 Sending registration anyway (webOS 23+ may not send hello)")
-                                self.pendingRegistrationPayload = nil
-                                Task {
-                                    do {
-                                        try await self.sendRegistrationRequest(pendingPayload)
-                                    } catch {
-                                        print("[SSAPWebSocket] ❌ Failed to send registration: \(error)")
-                                        self.queue.async {
-                                            self.finishRegister(with: .failure(error))
-                                        }
-                                    }
-                                }
+                    print("[SSAPWebSocket] ⚠️ No 'hello' yet, sending registration immediately")
+                    Task {
+                        do {
+                            try await self.sendRegistrationRequest(payload)
+                        } catch {
+                            print("[SSAPWebSocket] ❌ Failed to send registration: \(error)")
+                            self.queue.async {
+                                self.finishRegister(with: .failure(error))
                             }
                         }
                     }
@@ -229,6 +215,7 @@ public final class SSAPWebSocketClient: NSObject {
         print("[SSAPWebSocket] 📝 Creating registration request with id: \(request.id)")
         
         await queue.async {
+            self.pendingRegistrationPayload = nil
             self.registerRequestId = request.id
             self.registerMessageHandler = { [weak self] response in
                 guard let self else { return false }

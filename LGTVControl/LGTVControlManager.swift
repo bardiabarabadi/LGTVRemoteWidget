@@ -53,7 +53,14 @@ public final class LGTVControlManager {
     // MARK: - Public API
 
     @discardableResult
-    public func connect(ip: String, mac: String) async throws -> String? {
+    public func connect(ip: String, mac: String, enablePointer: Bool = true) async throws -> String? {
+        if case .connected = status,
+           let current = currentCredentials,
+           current.ipAddress == ip,
+           current.macAddress.caseInsensitiveCompare(mac) == .orderedSame {
+            return nil
+        }
+
         status = .connecting
 
         let normalizedMac = mac.uppercased()
@@ -75,11 +82,13 @@ public final class LGTVControlManager {
                 currentCredentials = credentials
                 status = .connected
                 
-                // Setup pointer input socket for navigation
-                do {
-                    try await setupPointerInput()
-                } catch {
-                    // Don't fail connection if pointer setup fails - can retry later
+                if enablePointer {
+                    // Setup pointer input socket for navigation
+                    do {
+                        try await setupPointerInput()
+                    } catch {
+                        // Don't fail connection if pointer setup fails - can retry later
+                    }
                 }
                 
                 return nil
