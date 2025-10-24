@@ -29,6 +29,7 @@ public final class LGTVControlManager {
     private let webSocket = SSAPWebSocketClient()
     private let keychain = KeychainManager()
     private let wol = WakeOnLAN()
+    private var pointerInput: PointerInputClient?
 
     private var currentCredentials: TVCredentials?
     private var status: ConnectionStatus = .disconnected {
@@ -69,65 +70,8 @@ public final class LGTVControlManager {
         currentCredentials = credentials
 
         do {
-            // Try Bonjour discovery first
-            print("[LGTVControlManager] 🔍 Attempting Bonjour discovery...")
-            let discovery = LGTVDiscovery()
-            let devices = await discovery.discover(timeout: 3.0)
-            if !devices.isEmpty {
-                for device in devices {
-                    print("[LGTVControlManager] 📺 Discovered: \(device.name) at \(device.ip):\(device.port)")
-                }
-            } else {
-                print("[LGTVControlManager] ⚠️ No devices found via Bonjour discovery")
-            }
-            
-            // Run diagnostics
-            print("[LGTVControlManager] 🔍 Running network diagnostics...")
-            let tcpTest = await NetworkDiagnostics.testTCPConnection(host: ip, port: 3000)
-            print("[LGTVControlManager] TCP Test (3000): \(tcpTest.success ? "✅" : "❌") \(tcpTest.message)")
-            
-            // Also test port 3001 in case TV uses secure WebSocket
-            let tcpTest3001 = await NetworkDiagnostics.testTCPConnection(host: ip, port: 3001)
-            print("[LGTVControlManager] TCP Test (3001): \(tcpTest3001.success ? "✅" : "❌") \(tcpTest3001.message)")
-            
-            // Test raw WebSocket handshake to see what the TV responds
-            let rawTest = await RawWebSocketTest.testRawWebSocketHandshake(host: ip, port: 3000)
-            print("[LGTVControlManager] Raw WebSocket Test (port 3000): \(rawTest.success ? "✅" : "❌")")
-            print("[LGTVControlManager] TV Response: \(rawTest.response)")
-            
-            // If port 3000 fails, try 3001
-            if !rawTest.success && tcpTest3001.success {
-                print("[LGTVControlManager] 🔄 Trying port 3001...")
-                let rawTest3001 = await RawWebSocketTest.testRawWebSocketHandshake(host: ip, port: 3001)
-                print("[LGTVControlManager] Raw WebSocket Test (port 3001): \(rawTest3001.success ? "✅" : "❌")")
-                print("[LGTVControlManager] TV Response: \(rawTest3001.response)")
-                
-                // Also try HTTPS on port 3001
-                print("[LGTVControlManager] 🔄 Trying HTTPS on port 3001...")
-                if let url = URL(string: "https://\(ip):3001/") {
-                    do {
-                        var request = URLRequest(url: url)
-                        request.timeoutInterval = 5
-                        let (data, response) = try await URLSession.shared.data(for: request)
-                        if let httpResponse = response as? HTTPURLResponse {
-                            let body = String(data: data, encoding: .utf8) ?? "<binary>"
-                            print("[LGTVControlManager] HTTPS Response (3001): Status \(httpResponse.statusCode)")
-                            print("[LGTVControlManager] Body: \(body)")
-                        }
-                    } catch {
-                        print("[LGTVControlManager] HTTPS Test (3001): ❌ \(error.localizedDescription)")
-                    }
-                }
-            }
-            
-            if !tcpTest.success && !tcpTest3001.success {
-                throw ControlError.notConnected
-            }
-            
-            print("[LGTVControlManager] 📋 Analysis: Port 3000 resets (disabled), Port 3001 available")
-            print("[LGTVControlManager] 💡 webOS 23 requires secure WebSocket (wss://) on port 3001")
-            
-            print("[LGTVControlManager] 🔌 Initiating SECURE WebSocket connection (wss://\(ip):3001/)...")
+            // Connect directly using secure WebSocket (webOS 23 requirement)
+            print("[LGTVControlManager] � Connecting to wss://\(ip):3001/...")
             try await webSocket.connect(to: ip, useSecure: true)
             print("[LGTVControlManager] ✅ WebSocket connected, starting registration...")
             let result = try await webSocket.register(manifest: manifest, clientKey: credentials.clientKey)
@@ -138,6 +82,17 @@ public final class LGTVControlManager {
                 saveCredentials(credentials)
                 currentCredentials = credentials
                 status = .connected
+                
+                // Setup pointer input socket for navigation
+                do {
+                    print("[LGTVControlManager] 🎮 Starting pointer input setup...")
+                    try await setupPointerInput()
+                    print("[LGTVControlManager] ✅ Pointer input setup complete")
+                } catch {
+                    print("[LGTVControlManager] ⚠️ Failed to setup pointer input: \(error)")
+                    // Don't fail connection if pointer setup fails - can retry later
+                }
+                
                 return nil
             case .pairingRequired(let code):
                 print("[LGTVControlManager] 🔐 Pairing required - code: \(code ?? "none")")
@@ -198,11 +153,15 @@ public final class LGTVControlManager {
 
     public func disconnect() {
         webSocket.disconnect()
+        pointerInput?.disconnect()
+        pointerInput = nil
         status = .disconnected
     }
 
-    public func wakeTV(mac: String) async throws {
-        try await wol.send(macAddress: mac)
+    public func wakeTV(mac: String, ip: String? = nil) async throws {
+        print("[LGTVControlManager] 📡 Sending Wake-on-LAN to MAC: \(mac), IP: \(ip ?? "broadcast")")
+        try await wol.send(macAddress: mac, ipAddress: ip)
+        print("[LGTVControlManager] ✅ Wake-on-LAN packets sent")
         // Give the TV a moment to wake up (callers should handle additional waits)
         try? await Task.sleep(nanoseconds: 2_000_000_000)
     }
@@ -220,6 +179,51 @@ public final class LGTVControlManager {
             return creds
         }
         return nil
+    }
+    
+    // MARK: - Pointer Input (Navigation)
+    
+    private func setupPointerInput() async throws {
+        print("[LGTVControlManager] 🎮 Setting up pointer input socket...")
+        
+        // Request pointer socket path
+        let request = SSAPRequest(type: .request, uri: "ssap://com.webos.service.networkinput/getPointerInputSocket")
+        guard let response = try await webSocket.sendRequest(request),
+              let socketPath = response.payload?["socketPath"]?.value as? String else {
+            throw ControlError.notConnected
+        }
+        
+        print("[LGTVControlManager] 📍 Got pointer socket path: \(socketPath)")
+        
+        // Connect to pointer socket
+        let pointer = PointerInputClient()
+        try await pointer.connect(socketPath: socketPath)
+        self.pointerInput = pointer
+        
+        print("[LGTVControlManager] ✅ Pointer input ready")
+    }
+    
+    public func sendButton(_ button: PointerInputClient.Button) async throws {
+        // Check if we have pointer input, if not try to set it up
+        if pointerInput == nil {
+            print("[LGTVControlManager] ⚠️ Pointer input not set up, attempting to connect...")
+            try await setupPointerInput()
+        }
+        
+        guard let pointerInput = pointerInput else {
+            print("[LGTVControlManager] ❌ Failed to setup pointer input")
+            throw ControlError.notConnected
+        }
+        
+        try await pointerInput.sendButton(button)
+    }
+    
+    public func sendClick() async throws {
+        guard let pointerInput = pointerInput else {
+            throw ControlError.notConnected
+        }
+        
+        try await pointerInput.sendClick()
     }
 
     // MARK: - Helpers

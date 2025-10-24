@@ -61,12 +61,155 @@ struct ContentView: View {
                         Label("Disconnect", systemImage: "xmark.circle")
                     }
                     .disabled(!viewModel.isConnected)
+                    
+                    Button(action: { viewModel.powerOn() }) {
+                        Label("Wake TV (WOL)", systemImage: "power.circle")
+                    }
+                    .buttonStyle(.borderedProminent)
+                    .tint(.green)
+                    .disabled(viewModel.isConnecting)
                 }
 
                 if let message = viewModel.errorMessage {
                     Section("Error") {
                         Text(message)
                             .foregroundStyle(.red)
+                    }
+                }
+                
+                // Command Testing Section
+                if viewModel.isConnected {
+                    Section("Test Commands") {
+                        VStack(spacing: 16) {
+                            // Volume Controls
+                            HStack(spacing: 12) {
+                                Button(action: { viewModel.sendCommand("ssap://audio/volumeUp") }) {
+                                    Label("Vol +", systemImage: "speaker.wave.3")
+                                        .frame(maxWidth: .infinity)
+                                }
+                                .buttonStyle(.bordered)
+                                
+                                Button(action: { viewModel.sendCommand("ssap://audio/volumeDown") }) {
+                                    Label("Vol −", systemImage: "speaker.wave.1")
+                                        .frame(maxWidth: .infinity)
+                                }
+                                .buttonStyle(.bordered)
+                                
+                                Button(action: { viewModel.sendCommand("ssap://audio/setMute", ["mute": true]) }) {
+                                    Label("Mute", systemImage: "speaker.slash")
+                                        .frame(maxWidth: .infinity)
+                                }
+                                .buttonStyle(.bordered)
+                            }
+                            
+                            // HDMI Inputs
+                            HStack(spacing: 12) {
+                                Button(action: { viewModel.sendCommand("ssap://tv/switchInput", ["inputId": "HDMI_1"]) }) {
+                                    Text("HDMI 1")
+                                        .frame(maxWidth: .infinity)
+                                }
+                                .buttonStyle(.bordered)
+                                
+                                Button(action: { viewModel.sendCommand("ssap://tv/switchInput", ["inputId": "HDMI_2"]) }) {
+                                    Text("HDMI 2")
+                                        .frame(maxWidth: .infinity)
+                                }
+                                .buttonStyle(.bordered)
+                                
+                                Button(action: { viewModel.sendCommand("ssap://tv/switchInput", ["inputId": "HDMI_3"]) }) {
+                                    Text("HDMI 3")
+                                        .frame(maxWidth: .infinity)
+                                }
+                                .buttonStyle(.bordered)
+                            }
+                            
+                            // App Launchers
+                            HStack(spacing: 12) {
+                                Button(action: { viewModel.sendCommand("ssap://system.launcher/launch", ["id": "cdp-30"]) }) {
+                                    Label("Plex", systemImage: "play.tv")
+                                        .frame(maxWidth: .infinity)
+                                }
+                                .buttonStyle(.bordered)
+                                .tint(.orange)
+                                
+                                Button(action: { viewModel.sendCommand("ssap://system.launcher/launch", ["id": "youtube.leanback.v4"]) }) {
+                                    Label("YouTube", systemImage: "play.rectangle")
+                                        .frame(maxWidth: .infinity)
+                                }
+                                .buttonStyle(.bordered)
+                                .tint(.red)
+                            }
+                            
+                            // Navigation Controls
+                            VStack(spacing: 8) {
+                                // Home and Back buttons (using system.launcher)
+                                HStack(spacing: 12) {
+                                    Button(action: { viewModel.sendButton(.home) }) {
+                                        Label("Home", systemImage: "house")
+                                            .frame(maxWidth: .infinity)
+                                    }
+                                    .buttonStyle(.bordered)
+                                    
+                                    Button(action: { viewModel.sendButton(.back) }) {
+                                        Label("Back", systemImage: "arrow.uturn.backward")
+                                            .frame(maxWidth: .infinity)
+                                    }
+                                    .buttonStyle(.bordered)
+                                }
+                                
+                                // Arrow D-Pad (using pointer input socket)
+                                Button(action: { viewModel.sendButton(.up) }) {
+                                    Image(systemName: "chevron.up")
+                                        .frame(width: 44, height: 44)
+                                }
+                                .buttonStyle(.bordered)
+                                
+                                // Left, OK, Right
+                                HStack(spacing: 12) {
+                                    Button(action: { viewModel.sendButton(.left) }) {
+                                        Image(systemName: "chevron.left")
+                                            .frame(width: 44, height: 44)
+                                    }
+                                    .buttonStyle(.bordered)
+                                    
+                                    Button(action: { viewModel.sendButton(.enter) }) {
+                                        Text("OK")
+                                            .font(.headline)
+                                            .frame(width: 44, height: 44)
+                                    }
+                                    .buttonStyle(.borderedProminent)
+                                    
+                                    Button(action: { viewModel.sendButton(.right) }) {
+                                        Image(systemName: "chevron.right")
+                                            .frame(width: 44, height: 44)
+                                    }
+                                    .buttonStyle(.bordered)
+                                }
+                                
+                                // Down arrow
+                                Button(action: { viewModel.sendButton(.down) }) {
+                                    Image(systemName: "chevron.down")
+                                        .frame(width: 44, height: 44)
+                                }
+                                .buttonStyle(.bordered)
+                            }
+                            .frame(maxWidth: .infinity)
+                            
+                            // Power Off only (Power On is in Connection section)
+                            Button(role: .destructive, action: { viewModel.sendCommand("ssap://system/turnOff") }) {
+                                Label("Power Off", systemImage: "power.circle.fill")
+                                    .frame(maxWidth: .infinity)
+                            }
+                            .buttonStyle(.borderedProminent)
+                        }
+                        .padding(.vertical, 8)
+                        
+                        if let commandResult = viewModel.commandResult {
+                            Text(commandResult)
+                                .font(.caption)
+                                .foregroundStyle(viewModel.commandSuccess ? .green : .red)
+                                .frame(maxWidth: .infinity, alignment: .center)
+                        }
                     }
                 }
             }
@@ -107,6 +250,8 @@ final class ConnectionViewModel: ObservableObject {
     @Published var pairingCodeInput = ""
     @Published var pendingPairingCode: String?
     @Published var errorMessage: String?
+    @Published var commandResult: String?
+    @Published var commandSuccess: Bool = true
 
     private let manager = LGTVControlManager.shared
 
@@ -245,6 +390,77 @@ final class ConnectionViewModel: ObservableObject {
     func disconnect() {
         manager.disconnect()
         status = manager.getConnectionStatus()
+    }
+    
+    func sendCommand(_ uri: String, _ parameters: [String: Any]? = nil) {
+        commandResult = nil
+        Task {
+            do {
+                try await manager.sendCommand(uri, parameters: parameters)
+                await MainActor.run {
+                    commandSuccess = true
+                    commandResult = "✅ Command sent: \(uri.components(separatedBy: "/").last ?? uri)"
+                }
+                // Clear result after 3 seconds
+                try? await Task.sleep(nanoseconds: 3_000_000_000)
+                await MainActor.run {
+                    commandResult = nil
+                }
+            } catch {
+                await MainActor.run {
+                    commandSuccess = false
+                    commandResult = "❌ Error: \(error.localizedDescription)"
+                }
+            }
+        }
+    }
+    
+    func sendButton(_ button: PointerInputClient.Button) {
+        commandResult = nil
+        Task {
+            do {
+                try await manager.sendButton(button)
+                await MainActor.run {
+                    commandSuccess = true
+                    commandResult = "✅ Button: \(button.rawValue)"
+                }
+                // Clear result after 2 seconds (faster for navigation)
+                try? await Task.sleep(nanoseconds: 2_000_000_000)
+                await MainActor.run {
+                    commandResult = nil
+                }
+            } catch {
+                await MainActor.run {
+                    commandSuccess = false
+                    commandResult = "❌ Error: \(error.localizedDescription)"
+                }
+            }
+        }
+    }
+    
+    func powerOn() {
+        commandResult = nil
+        let mac = macAddress.trimmingCharacters(in: .whitespacesAndNewlines)
+        let ip = ipAddress.trimmingCharacters(in: .whitespacesAndNewlines)
+        Task {
+            do {
+                try await manager.wakeTV(mac: mac, ip: ip)
+                await MainActor.run {
+                    commandSuccess = true
+                    commandResult = "✅ Wake-on-LAN sent to TV"
+                }
+                // Clear result after 3 seconds
+                try? await Task.sleep(nanoseconds: 3_000_000_000)
+                await MainActor.run {
+                    commandResult = nil
+                }
+            } catch {
+                await MainActor.run {
+                    commandSuccess = false
+                    commandResult = "❌ WOL Error: \(error.localizedDescription)"
+                }
+            }
+        }
     }
 
     private func statusRequiresPairing(_ status: ConnectionStatus) -> Bool {
