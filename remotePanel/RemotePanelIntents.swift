@@ -54,12 +54,25 @@ struct PowerOffIntent: AppIntent {
     }
 }
 
-struct PlayPauseIntent: AppIntent {
-    static var title: LocalizedStringResource = "Play/Pause"
-    static var description = IntentDescription("Toggle media playback.")
+struct PlayIntent: AppIntent {
+    static var title: LocalizedStringResource = "Play"
+    static var description = IntentDescription("Resume media playback.")
 
     func perform() async throws -> some IntentResult {
-        try await RemotePanelActionHandler.shared.sendPlayPause()
+        try await RemotePanelActionHandler.shared.sendPlay()
+        await MainActor.run {
+            WidgetCenter.shared.reloadTimelines(ofKind: RemotePanelWidget.kind)
+        }
+        return .result()
+    }
+}
+
+struct PauseIntent: AppIntent {
+    static var title: LocalizedStringResource = "Pause"
+    static var description = IntentDescription("Pause media playback.")
+
+    func perform() async throws -> some IntentResult {
+        try await RemotePanelActionHandler.shared.sendPause()
         await MainActor.run {
             WidgetCenter.shared.reloadTimelines(ofKind: RemotePanelWidget.kind)
         }

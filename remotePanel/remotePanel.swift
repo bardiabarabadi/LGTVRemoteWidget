@@ -107,7 +107,10 @@ struct RemotePanelEntryView: View {
 
                 Spacer()
 
-                controlButton(systemName: "playpause.fill", tint: .blue, intent: PlayPauseIntent(), accessibilityLabel: "Play or pause")
+                VStack(spacing: 12) {
+                    controlButton(systemName: "play.circle.fill", tint: .blue, intent: PlayIntent(), accessibilityLabel: "Play")
+                    controlButton(systemName: "pause.circle.fill", tint: .indigo, intent: PauseIntent(), accessibilityLabel: "Pause")
+                }
             }
         }
         .padding()
@@ -121,7 +124,10 @@ struct RemotePanelEntryView: View {
                 VStack(spacing: 12) {
                     controlButton(systemName: "power.circle.fill", tint: .green, intent: PowerOnIntent(), accessibilityLabel: "Power on")
                     controlButton(systemName: "power.circle.fill", tint: .red, intent: PowerOffIntent(), accessibilityLabel: "Power off")
-                    controlButton(systemName: "playpause.fill", tint: .blue, intent: PlayPauseIntent(), accessibilityLabel: "Play or pause")
+                    HStack(spacing: 12) {
+                        controlButton(systemName: "play.circle.fill", tint: .blue, intent: PlayIntent(), accessibilityLabel: "Play")
+                        controlButton(systemName: "pause.circle.fill", tint: .indigo, intent: PauseIntent(), accessibilityLabel: "Pause")
+                    }
                 }
                 .frame(maxWidth: .infinity, alignment: .top)
 

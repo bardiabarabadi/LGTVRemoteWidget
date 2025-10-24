@@ -34,18 +34,12 @@ actor RemotePanelActionHandler {
         }
     }
 
-    func sendPlayPause() async throws {
-        do {
-            try await sendCommand(uri: "ssap://media.controls/playPause")
-        } catch {
-            logger.warning("playPause command failed, attempting toggle fallback")
-            do {
-                try await sendCommand(uri: "ssap://media.controls/togglePlayPause")
-            } catch {
-                logger.error("Play/pause fallback failed: \(error.localizedDescription, privacy: .public)")
-                throw error
-            }
-        }
+    func sendPlay() async throws {
+        try await sendCommand(uri: "ssap://media.controls/play")
+    }
+
+    func sendPause() async throws {
+        try await sendCommand(uri: "ssap://media.controls/pause")
     }
 
     func sendNavigation(_ button: PointerInputClient.Button) async throws {
@@ -56,7 +50,7 @@ actor RemotePanelActionHandler {
 
     func sendOk() async throws {
         try await performCommandBlock(connectWithPointer: true) { manager in
-            try await manager.sendClick()
+            try await manager.sendButton(.enter)
         }
     }
 

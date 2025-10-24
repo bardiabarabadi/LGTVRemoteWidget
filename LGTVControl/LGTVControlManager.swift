@@ -19,6 +19,32 @@ public final class LGTVControlManager {
         }
     }
 
+    public enum PlaybackState: Equatable, CustomStringConvertible {
+        case playing
+        case paused
+        case stopped
+        case buffering
+        case finished
+        case unknown(String?)
+
+        public var description: String {
+            switch self {
+            case .playing:
+                return "playing"
+            case .paused:
+                return "paused"
+            case .stopped:
+                return "stopped"
+            case .buffering:
+                return "buffering"
+            case .finished:
+                return "finished"
+            case .unknown(let value):
+                return value ?? "unknown"
+            }
+        }
+    }
+
     // MARK: - Constants
     public struct Constants {
         public static let keychainService = "com.DaraConsultingInc.LGTVRemoteWidget.credentials"
@@ -144,6 +170,121 @@ public final class LGTVControlManager {
         if let returnValue = response?.returnValue, returnValue == false {
             let message = response?.error ?? "Command rejected"
             throw SSAPWebSocketClient.ClientError.serverError(message)
+        }
+    }
+
+    public func currentPlaybackState() async throws -> PlaybackState {
+        guard case .connected = status else { throw ControlError.notConnected }
+
+        if let state = try await fetchPlaybackState(uri: "ssap://media.controls/getPlaybackStatus") {
+            return state
+        }
+
+        if let state = try await fetchPlaybackState(uri: "ssap://media.controls/getMediaStatus") {
+            return state
+        }
+
+        return .unknown(nil)
+    }
+
+    private func fetchPlaybackState(uri: String) async throws -> PlaybackState? {
+        let request = SSAPRequest(type: .request, uri: uri)
+
+        do {
+            guard let response = try await webSocket.sendRequest(request) else {
+                return nil
+            }
+
+            if let returnValue = response.returnValue, returnValue == false {
+                return nil
+            }
+
+            if let error = response.error, !error.isEmpty {
+                throw SSAPWebSocketClient.ClientError.serverError(error)
+            }
+
+            guard let payload = response.payload else {
+                return nil
+            }
+
+            if let stateString = extractPlaybackState(from: payload) {
+                return mapPlaybackState(stateString)
+            }
+
+            return nil
+        } catch let clientError as SSAPWebSocketClient.ClientError {
+            switch clientError {
+            case .serverError:
+                return nil
+            default:
+                throw clientError
+            }
+        }
+    }
+
+    private func extractPlaybackState(from payload: [String: AnyCodable]) -> String? {
+        let keys = ["state", "playState", "playbackStatus", "playbackState"]
+        for key in keys {
+            if let value = payload[key]?.value as? String {
+                return value
+            }
+        }
+
+        for value in payload.values {
+            if let nested = value.value as? [String: Any], let nestedValue = extractPlaybackState(from: nested) {
+                return nestedValue
+            }
+            if let array = value.value as? [Any] {
+                for element in array {
+                    if let nested = element as? [String: Any], let nestedValue = extractPlaybackState(from: nested) {
+                        return nestedValue
+                    }
+                }
+            }
+        }
+
+        return nil
+    }
+
+    private func extractPlaybackState(from dictionary: [String: Any]) -> String? {
+        let keys = ["state", "playState", "playbackStatus", "playbackState"]
+        for key in keys {
+            if let value = dictionary[key] as? String {
+                return value
+            }
+        }
+
+        for value in dictionary.values {
+            if let nestedDict = value as? [String: Any], let nestedValue = extractPlaybackState(from: nestedDict) {
+                return nestedValue
+            }
+            if let array = value as? [Any] {
+                for element in array {
+                    if let nestedDict = element as? [String: Any], let nestedValue = extractPlaybackState(from: nestedDict) {
+                        return nestedValue
+                    }
+                }
+            }
+        }
+
+        return nil
+    }
+
+    private func mapPlaybackState(_ value: String) -> PlaybackState {
+        let normalized = value.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
+        switch normalized {
+        case "play", "playing":
+            return .playing
+        case "pause", "paused":
+            return .paused
+        case "stop", "stopped":
+            return .stopped
+        case "buffering", "loading":
+            return .buffering
+        case "finished", "ended", "end":
+            return .finished
+        default:
+            return .unknown(value)
         }
     }
 
