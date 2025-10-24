@@ -2,8 +2,18 @@
 
 ## 📋 Quick Checklist
 
-### Step 1: TV Setup
-- [x] Enable "LG Connect Apps" on TV
+### Step 1: **Current Status:** ✅ **PAIRING SUCCESSFUL - Ready for Command Testing!**
+
+- Oct 23 (11:15 PM): **📋 Documentation cleaned up!** Removed outdated "wait for hello" references from SSAP protocol notes. Added Step 5.5 for command testing in main app before moving to widget implementation.
+
+- Oct 23 (11:00 PM): **🎉 SUCCESS!** First successful pairing with LG webOS 23 TV! The connection is fully working:
+  - ✅ Secure WebSocket (wss://10.0.0.14:3001/) connected
+  - ✅ Self-signed certificate accepted automatically
+  - ✅ Registration sent and acknowledged by TV
+  - ✅ TV showed "Allow this device?" prompt (PROMPT pairing mode)
+  - ✅ User accepted → received client-key `9ba71d29c353cf0bdcc00c4b0a8cc189`
+  - ✅ Credentials stored in Keychain
+  - **Next:** Implement and test command sending (Step 5.5) [x] Enable "LG Connect Apps" on TV
 - [x] Get TV IP address: 10.0.0.14
 - [x] Get TV MAC address: 34:E6:E6:F9:05:50
 - [x] Test network connectivity (ping TV)
@@ -34,6 +44,18 @@
 - [x] Wire up pairing prompts in UI
 - [x] ✅ **Test WebSocket connection from UI - WORKING!**
 - [x] ✅ **Persist credentials via Keychain from UI - WORKING!**
+
+### Step 5.5: Command Testing in Main App
+- [ ] Implement `sendCommand()` method in LGTVControlManager
+- [ ] Add test buttons to ContentView for:
+  - [ ] Volume Up/Down
+  - [ ] Mute toggle
+  - [ ] HDMI input switching
+  - [ ] App launching (Netflix, YouTube)
+  - [ ] Power off
+- [ ] Test all commands on device
+- [ ] Add error handling and user feedback
+- [ ] Verify client-key works for subsequent connections
 
 ### Step 6: Widget Extension
 - [ ] Create Widget Extension target

@@ -58,8 +58,11 @@ Required:
 - URLSession authentication challenge handling
 ```
 
-### 2. TV Hello Message
-After connection, TV sends:
+### 2. TV Hello Message (webOS ≤21 only)
+
+**⚠️ webOS 22/23+ does NOT send hello message!**
+
+On older webOS (≤21), TV sends:
 ```json
 {
   "type": "hello",
@@ -73,6 +76,8 @@ After connection, TV sends:
   }
 }
 ```
+
+**webOS 22/23+:** Skip this step - send registration after 2-second delay
 
 ### 3. Client Registration Request
 After receiving hello, client sends:
@@ -100,24 +105,41 @@ TV responds with either:
 - Pairing required (show prompt on TV)
 - Success with client key (if previously paired)
 
-## Implementation Changes
+## Implementation Timeline
 
-### Before (Incorrect)
+### Initial Attempt (WRONG)
 ```swift
-connect() -> WebSocket opens
+connect() -> WebSocket opens on ws://TV:3000
   ↓
-register() -> Immediately send registration ❌ TV resets connection
+register() -> Immediately send registration ❌ Connection reset by peer
 ```
 
-### After (Correct)
+### Second Attempt (PARTIALLY CORRECT - webOS ≤21)
 ```swift
-connect() -> WebSocket opens
+connect() -> WebSocket opens on ws://TV:3000
   ↓
 receiveLoop() -> Wait for "hello" message
   ↓
 handle("hello") -> Process TV info
   ↓
-sendRegistration() -> Now send registration ✅ TV accepts
+sendRegistration() -> Send registration ⚠️ Still failed on webOS 23
+```
+
+### Final Solution (CORRECT - webOS 22/23+)
+```swift
+connect() -> WebSocket opens on wss://TV:3001 (secure)
+  ↓
+urlSession(didReceive challenge) -> Accept self-signed certificate ✅
+  ↓
+Connection established
+  ↓
+Wait 2 seconds (no "hello" on webOS 23)
+  ↓
+sendRegistration() -> Send registration ✅ TV accepts
+  ↓
+TV shows "Allow?" prompt
+  ↓
+User accepts → receive "registered" with client-key ✅
 ```
 
 ## TV Prerequisites
