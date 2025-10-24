@@ -90,7 +90,7 @@ struct RemotePanelEntryView: View {
                 .stroke(Color.white.opacity(0.05), lineWidth: 1)
 
             content
-                .padding(20)
+                .padding(0)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
@@ -138,41 +138,98 @@ struct RemotePanelEntryView: View {
     }
 
     private var largeLayout: some View {
-        VStack(spacing: 16) {
-            card {
-                HStack(spacing: 12) {
-                    quickActionButton(title: "Plex", accent: Color.orange, intent: LaunchPlexIntent())
-                    quickActionButton(title: "YouTube", accent: Color.red, intent: LaunchYouTubeIntent())
-                    quickActionButton(title: "HDMI 1", accent: accentPurple, intent: SwitchHDMI1Intent())
-                }
-            }
-
-            HStack(spacing: 16) {
-                card {
-                    VStack(spacing: 14) {
-                        HStack(spacing: 12) {
-                            powerOnControl
-                            powerOffControl
+        GeometryReader { geometry in
+            ZStack {
+                // Dark background with rounded corners
+                RoundedRectangle(cornerRadius: 20, style: .continuous)
+                    .fill(Color(white: 0.15))
+                    .shadow(color: Color.black.opacity(0.3), radius: 10, x: 0, y: 4)
+                
+                VStack(spacing: 0) {
+                    // Calculate button size dynamically
+                    let totalPadding: CGFloat = 1 // outer padding
+                    let spacing: CGFloat = 10
+                    let availableWidth = geometry.size.width - (totalPadding * 2) - (spacing * 3)
+                    let buttonSize = availableWidth / 4
+                    
+                    // Fixed 4×4 Grid layout
+                    Grid(horizontalSpacing: spacing, verticalSpacing: spacing) {
+                        // Row 1: Power On, Power Off, Plex, YouTube
+                        GridRow {
+                            gridButton(icon: "power", color: Color(red: 0.3, green: 0.78, blue: 0.4), intent: PowerOnIntent(), label: "Power On")
+                                .frame(width: buttonSize, height: buttonSize)
+                            gridButton(icon: "power", color: Color(red: 1.0, green: 0.27, blue: 0.23), intent: PowerOffIntent(), label: "Power Off")
+                                .frame(width: buttonSize, height: buttonSize)
+                            gridButton(icon: "film", color: Color(red: 0.9, green: 0.5, blue: 0.2), intent: LaunchPlexIntent(), label: "Plex")
+                                .frame(width: buttonSize, height: buttonSize)
+                            gridButton(icon: "play.rectangle.fill", color: Color(red: 1.0, green: 0.18, blue: 0.18), intent: LaunchYouTubeIntent(), label: "YouTube")
+                                .frame(width: buttonSize, height: buttonSize)
                         }
-                        HStack(spacing: 12) {
-                            playControl
-                            pauseControl
+                        
+                        // Row 2: Play | ↑ | Home | HDMI 1
+                        GridRow {
+                            gridButton(icon: "play.fill", color: Color(red: 0.35, green: 0.78, blue: 0.98), intent: PlayIntent(), label: "Play")
+                                .frame(width: buttonSize, height: buttonSize)
+                            gridButton(icon: "chevron.up", color: Color(white: 0.35), intent: NavUpIntent(), label: "Up")
+                                .frame(width: buttonSize, height: buttonSize)
+                            gridButton(icon: "house.fill", color: Color(white: 0.35), intent: NavHomeIntent(), label: "Home")
+                                .frame(width: buttonSize, height: buttonSize)
+                            gridButton(icon: "rectangle.connected.to.line.below", color: Color(red: 0.69, green: 0.32, blue: 0.87), intent: SwitchHDMI1Intent(), label: "HDMI 1")
+                                .frame(width: buttonSize, height: buttonSize)
+                        }
+                        
+                        // Row 3: ← | OK | → | Vol+
+                        GridRow {
+                            gridButton(icon: "chevron.left", color: Color(white: 0.35), intent: NavLeftIntent(), label: "Left")
+                                .frame(width: buttonSize, height: buttonSize)
+                            gridButton(text: "OK", color: Color(red: 0.0, green: 0.48, blue: 1.0), intent: NavOkIntent(), label: "OK", highlight: true)
+                                .frame(width: buttonSize, height: buttonSize)
+                            gridButton(icon: "chevron.right", color: Color(white: 0.35), intent: NavRightIntent(), label: "Right")
+                                .frame(width: buttonSize, height: buttonSize)
+                            gridButton(icon: "plus", color: Color(red: 0.0, green: 0.48, blue: 1.0), intent: VolumeUpIntent(), label: "Vol+")
+                                .frame(width: buttonSize, height: buttonSize)
+                        }
+                        
+                        // Row 4: Pause | ↓ | Back | Vol-
+                        GridRow {
+                            gridButton(icon: "pause.fill", color: Color(red: 0.35, green: 0.78, blue: 0.98), intent: PauseIntent(), label: "Pause")
+                                .frame(width: buttonSize, height: buttonSize)
+                            gridButton(icon: "chevron.down", color: Color(white: 0.35), intent: NavDownIntent(), label: "Down")
+                                .frame(width: buttonSize, height: buttonSize)
+                            gridButton(icon: "arrow.uturn.left", color: Color(white: 0.35), intent: NavBackIntent(), label: "Back")
+                                .frame(width: buttonSize, height: buttonSize)
+                            gridButton(icon: "minus", color: Color(red: 0.0, green: 0.48, blue: 1.0), intent: VolumeDownIntent(), label: "Vol-")
+                                .frame(width: buttonSize, height: buttonSize)
                         }
                     }
-                }
-
-                navigationCluster
-
-                card {
-                    VStack(spacing: 12) {
-                        volumeUpControl
-                        volumeDownControl
-                    }
+                    .padding(totalPadding)
                 }
             }
-
-            quickBackButton
         }
+    }
+    
+    // Grid button component for large widget
+    private func gridButton(icon: String? = nil, text: String? = nil, color: Color, intent: some AppIntent, label: String, highlight: Bool = false) -> some View {
+        Button(intent: intent) {
+            ZStack {
+                // Circular shape with thinner border
+                Circle()
+                    .fill(color)
+                
+                // Icon or text
+                if let icon = icon {
+                    Image(systemName: icon)
+                        .font(.system(size: 24, weight: .medium))
+                        .foregroundColor(.white)
+                } else if let text = text {
+                    Text(text)
+                        .font(.system(size: 18, weight: .semibold))
+                        .foregroundColor(.white)
+                }
+            }
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel(label)
     }
 
     private func card<Content: View>(@ViewBuilder content: () -> Content) -> some View {

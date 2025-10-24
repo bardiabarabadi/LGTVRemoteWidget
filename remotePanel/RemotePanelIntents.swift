@@ -160,3 +160,12 @@ struct SwitchHDMI1Intent: AppIntent {
         return .result()
     }
 }
+
+struct NavHomeIntent: AppIntent {
+    static var title: LocalizedStringResource = "Home"
+
+    func perform() async throws -> some IntentResult {
+        try await RemotePanelActionHandler.shared.sendNavigation(.home)
+        return .result()
+    }
+}
