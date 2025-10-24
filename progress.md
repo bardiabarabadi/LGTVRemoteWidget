@@ -22,14 +22,20 @@
 - [x] Add Wake-on-LAN sender
 - [x] Setup App Group sharing (entitlements + UserDefaults suite)
 
-### Step 4: Main App
-- [ ] Build SwiftUI setup screen
-- [ ] Add IP/MAC input fields
-- [ ] Implement pairing flow
-- [ ] Test WebSocket connection
-- [ ] Store credentials in Keychain
+### Step 4: SSAP Pairing Flow
+- [x] Expand SSAP request/response models for registration
+- [x] Implement WebSocket register & pairing handling
+- [x] Update control manager connect/pair APIs
+- [ ] Run on-device pairing test (awaiting user)
 
-### Step 5: Widget Extension
+### Step 5: Main App
+- [x] Build SwiftUI setup screen
+- [x] Add IP/MAC input fields
+- [x] Wire up pairing prompts in UI
+- [ ] Test WebSocket connection from UI
+- [ ] Persist credentials via Keychain from UI
+
+### Step 6: Widget Extension
 - [ ] Create Widget Extension target
 - [ ] Setup App Intents (iOS 17+)
 - [ ] Design widget layout (medium/large)
@@ -42,7 +48,7 @@
   - [ ] HDMI2 input switcher
 - [ ] Add status indicator
 
-### Step 6: Testing & Polish
+### Step 7: Testing & Polish
 - [ ] Test on physical device
 - [ ] Test all widget buttons
 - [ ] Test Wake-on-LAN
@@ -50,13 +56,14 @@
 - [ ] Test pairing flow
 - [ ] Polish UI/UX
 
-### Step 7: Deployment
+### Step 8: Deployment
 - [ ] App Store assets
 - [ ] Privacy policy
 - [ ] Submit for review
 
 ---
 
-**Current Status:** � In Progress
+**Current Status:** 🚧 In Progress
+- Oct 23: Updated WebSocket client to send register JSON as text frames to prevent the TV from closing the socket; awaiting on-device validation.
 
 **Last Updated:** Oct 23, 2025
