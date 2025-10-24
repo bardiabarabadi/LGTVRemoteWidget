@@ -28,6 +28,19 @@ struct VolumeDownIntent: AppIntent {
     }
 }
 
+struct VolumeMuteIntent: AppIntent {
+    static var title: LocalizedStringResource = "Volume Mute"
+    static var description = IntentDescription("Toggle TV volume mute.")
+
+    func perform() async throws -> some IntentResult {
+        try await RemotePanelActionHandler.shared.sendVolumeMute()
+        await MainActor.run {
+            WidgetCenter.shared.reloadTimelines(ofKind: RemotePanelWidget.kind)
+        }
+        return .result()
+    }
+}
+
 struct PowerOnIntent: AppIntent {
     static var title: LocalizedStringResource = "Power On"
     static var description = IntentDescription("Turn the TV on using Wake-on-LAN.")

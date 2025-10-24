@@ -11,10 +11,10 @@
 		313FFBD72EAC032700D592C0 /* SwiftUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 313FFBD62EAC032700D592C0 /* SwiftUI.framework */; };
 		313FFBE62EAC032900D592C0 /* remotePanelExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 313FFBD22EAC032700D592C0 /* remotePanelExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		313FFC0A2EAC1AC500D592C0 /* LGTVControl.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 31CBD1012EAAC50000512126 /* LGTVControl.framework */; };
+		313FFC1B2EAC2C5B00D592C0 /* remotePanel/remotePanel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 313FFC1A2EAC2C5B00D592C0 /* remotePanel/remotePanel.swift */; };
+		313FFC1D2EAC2C9D00D592C0 /* remotePanel/RemotePanelActionHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 313FFC1C2EAC2C9D00D592C0 /* remotePanel/RemotePanelActionHandler.swift */; };
+		313FFC1F2EAC2CDD00D592C0 /* remotePanel/RemotePanelIntents.swift in Sources */ = {isa = PBXBuildFile; fileRef = 313FFC1E2EAC2CDD00D592C0 /* remotePanel/RemotePanelIntents.swift */; };
 		313FFC222EAC305F00D592C0 /* LGTVControl.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 31CBD1012EAAC50000512126 /* LGTVControl.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
-		313FFC1B2EAC2C5B00D592C0 /* remotePanel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 313FFC1A2EAC2C5B00D592C0 /* remotePanel.swift */; };
-		313FFC1D2EAC2C9D00D592C0 /* RemotePanelActionHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 313FFC1C2EAC2C9D00D592C0 /* RemotePanelActionHandler.swift */; };
-		313FFC1F2EAC2CDD00D592C0 /* RemotePanelIntents.swift in Sources */ = {isa = PBXBuildFile; fileRef = 313FFC1E2EAC2CDD00D592C0 /* RemotePanelIntents.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -46,17 +46,28 @@
 			name = "Embed Foundation Extensions";
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		313FFC212EAC305F00D592C0 /* Embed Frameworks */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 10;
+			files = (
+				313FFC222EAC305F00D592C0 /* LGTVControl.framework in Embed Frameworks */,
+			);
+			name = "Embed Frameworks";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
 		313FFBD22EAC032700D592C0 /* remotePanelExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = remotePanelExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		313FFBD42EAC032700D592C0 /* WidgetKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WidgetKit.framework; path = System/Library/Frameworks/WidgetKit.framework; sourceTree = SDKROOT; };
 		313FFBD62EAC032700D592C0 /* SwiftUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SwiftUI.framework; path = System/Library/Frameworks/SwiftUI.framework; sourceTree = SDKROOT; };
+		313FFC1A2EAC2C5B00D592C0 /* remotePanel/remotePanel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = remotePanel/remotePanel.swift; sourceTree = SOURCE_ROOT; };
+		313FFC1C2EAC2C9D00D592C0 /* remotePanel/RemotePanelActionHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = remotePanel/RemotePanelActionHandler.swift; sourceTree = SOURCE_ROOT; };
+		313FFC1E2EAC2CDD00D592C0 /* remotePanel/RemotePanelIntents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = remotePanel/RemotePanelIntents.swift; sourceTree = SOURCE_ROOT; };
 		31CBD0AD2EAABC3900512126 /* LG TV Remote Widget.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "LG TV Remote Widget.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		31CBD1012EAAC50000512126 /* LGTVControl.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = LGTVControl.framework; sourceTree = BUILT_PRODUCTS_DIR; };
-		313FFC1A2EAC2C5B00D592C0 /* remotePanel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = remotePanel/remotePanel.swift; sourceTree = SOURCE_ROOT; };
-		313FFC1C2EAC2C9D00D592C0 /* RemotePanelActionHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = remotePanel/RemotePanelActionHandler.swift; sourceTree = SOURCE_ROOT; };
-		313FFC1E2EAC2CDD00D592C0 /* RemotePanelIntents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = remotePanel/RemotePanelIntents.swift; sourceTree = SOURCE_ROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -77,11 +88,6 @@
 			);
 			path = remotePanel;
 			sourceTree = "<group>";
-			tabOrder = (
-				313FFC1A2EAC2C5B00D592C0 /* remotePanel.swift */,
-				313FFC1C2EAC2C9D00D592C0 /* RemotePanelActionHandler.swift */,
-				313FFC1E2EAC2CDD00D592C0 /* RemotePanelIntents.swift */,
-			);
 		};
 		31CBD0AF2EAABC3900512126 /* LG TV Remote Widget */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
@@ -133,6 +139,16 @@
 			name = Frameworks;
 			sourceTree = "<group>";
 		};
+		313FFE662EAC0C1800D592C0 /* Recovered References */ = {
+			isa = PBXGroup;
+			children = (
+				313FFC1C2EAC2C9D00D592C0 /* remotePanel/RemotePanelActionHandler.swift */,
+				313FFC1E2EAC2CDD00D592C0 /* remotePanel/RemotePanelIntents.swift */,
+				313FFC1A2EAC2C5B00D592C0 /* remotePanel/remotePanel.swift */,
+			);
+			name = "Recovered References";
+			sourceTree = "<group>";
+		};
 		31CBD0A42EAABC3900512126 = {
 			isa = PBXGroup;
 			children = (
@@ -141,6 +157,7 @@
 				313FFBD82EAC032700D592C0 /* remotePanel */,
 				313FFBD32EAC032700D592C0 /* Frameworks */,
 				31CBD0AE2EAABC3900512126 /* Products */,
+				313FFE662EAC0C1800D592C0 /* Recovered References */,
 			);
 			sourceTree = "<group>";
 		};
@@ -180,17 +197,6 @@
 			productName = remotePanelExtension;
 			productReference = 313FFBD22EAC032700D592C0 /* remotePanelExtension.appex */;
 			productType = "com.apple.product-type.app-extension";
-		};
-		313FFC212EAC305F00D592C0 /* Embed Frameworks */ = {
-			isa = PBXCopyFilesBuildPhase;
-			buildActionMask = 2147483647;
-			dstPath = "";
-			dstSubfolderSpec = 10;
-			files = (
-				313FFC222EAC305F00D592C0 /* LGTVControl.framework in Embed Frameworks */,
-			);
-			name = "Embed Frameworks";
-			runOnlyForDeploymentPostprocessing = 0;
 		};
 		31CBD0AC2EAABC3900512126 /* LG TV Remote Widget */ = {
 			isa = PBXNativeTarget;
@@ -301,9 +307,9 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				313FFC1D2EAC2C9D00D592C0 /* RemotePanelActionHandler.swift in Sources */,
-				313FFC1F2EAC2CDD00D592C0 /* RemotePanelIntents.swift in Sources */,
-				313FFC1B2EAC2C5B00D592C0 /* remotePanel.swift in Sources */,
+				313FFC1D2EAC2C9D00D592C0 /* remotePanel/RemotePanelActionHandler.swift in Sources */,
+				313FFC1F2EAC2CDD00D592C0 /* remotePanel/RemotePanelIntents.swift in Sources */,
+				313FFC1B2EAC2C5B00D592C0 /* remotePanel/remotePanel.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

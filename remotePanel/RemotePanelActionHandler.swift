@@ -15,6 +15,10 @@ actor RemotePanelActionHandler {
     func sendVolumeDown() async throws {
         try await sendCommand(uri: "ssap://audio/volumeDown")
     }
+    
+    func sendVolumeMute() async throws {
+        try await sendCommand(uri: "ssap://audio/volumeMute")
+    }
 
     func sendPowerOff() async throws {
         try await sendCommand(uri: "ssap://system/turnOff")

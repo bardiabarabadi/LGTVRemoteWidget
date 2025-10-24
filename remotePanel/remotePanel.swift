@@ -196,7 +196,7 @@ struct RemotePanelEntryView: View {
                                 .frame(width: buttonSize, height: buttonSize)
                         }
                         
-                        // Row 2: Play | ↑ | Home | Empty
+                        // Row 2: Play | ↑ | Home | Mute
                         GridRow {
                             gridButton(icon: "play.fill", color: Color(red: 0.55, green: 0.55, blue: 0.58), intent: PlayIntent(), label: "Play")
                                 .frame(width: buttonSize, height: buttonSize)
@@ -204,7 +204,7 @@ struct RemotePanelEntryView: View {
                                 .frame(width: buttonSize, height: buttonSize)
                             gridButton(icon: "house.fill", color: Color(white: 0.45), intent: NavHomeIntent(), label: "Home")
                                 .frame(width: buttonSize, height: buttonSize)
-                            Color.clear
+                            gridButton(icon: "speaker.slash.fill", color: Color(red: 0.0, green: 0.48, blue: 1.0), intent: VolumeMuteIntent(), label: "Mute")
                                 .frame(width: buttonSize, height: buttonSize)
                         }
                         
