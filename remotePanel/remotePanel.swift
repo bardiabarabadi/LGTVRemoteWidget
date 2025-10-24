@@ -62,203 +62,283 @@ struct RemotePanelEntryView: View {
     var entry: RemotePanelEntry
     @Environment(\.widgetFamily) private var family
 
+    private var panelBackground: LinearGradient {
+        LinearGradient(
+            colors: [
+                Color(red: 0.133, green: 0.145, blue: 0.173),
+                Color(red: 0.071, green: 0.078, blue: 0.102)
+            ],
+            startPoint: .topLeading,
+            endPoint: .bottomTrailing
+        )
+    }
+
+    private var cardBackground: Color { Color.white.opacity(0.08) }
+    private var cardStroke: Color { Color.white.opacity(0.14) }
+    private var softText: Color { Color.white.opacity(0.92) }
+    private var accentBlue: Color { Color(red: 0.471, green: 0.584, blue: 1.0) }
+    private var accentPurple: Color { Color(red: 0.635, green: 0.518, blue: 1.0) }
+    private var accentGreen: Color { Color(red: 0.427, green: 0.769, blue: 0.608) }
+    private var accentRed: Color { Color(red: 0.875, green: 0.373, blue: 0.427) }
+    private var neutralFill: Color { Color.white.opacity(0.12) }
+
     var body: some View {
+        ZStack {
+            RoundedRectangle(cornerRadius: 24, style: .continuous)
+                .fill(panelBackground)
+            RoundedRectangle(cornerRadius: 24, style: .continuous)
+                .stroke(Color.white.opacity(0.05), lineWidth: 1)
+
+            content
+                .padding(20)
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+    }
+
+    @ViewBuilder
+    private var content: some View {
         switch family {
-        case .systemMedium:
-            mediumLayout
         case .systemLarge:
             largeLayout
+        case .systemMedium:
+            mediumLayout
         default:
             mediumLayout
         }
     }
 
-    @ViewBuilder
-    private func volumeButton(symbol: String, intent: some AppIntent, accessibilityLabel: String) -> some View {
-        Button(intent: intent) {
-            Text(symbol)
-                .font(.title2.bold())
-                .frame(width: 44, height: 44)
-                .contentShape(Circle())
-        }
-        .buttonStyle(.borderedProminent)
-        .tint(Color.primary.opacity(0.9))
-        .foregroundStyle(.background)
-        .clipShape(Circle())
-        .accessibilityLabel(accessibilityLabel)
-    }
-
     private var mediumLayout: some View {
-        VStack(alignment: .leading, spacing: 16) {
-            statusHeader
-
-            HStack(alignment: .center, spacing: 20) {
+        card {
+            HStack(spacing: 16) {
                 VStack(spacing: 12) {
-                    controlButton(systemName: "power.circle.fill", tint: .green, intent: PowerOnIntent(), accessibilityLabel: "Power on")
-                    controlButton(systemName: "power.circle.fill", tint: .red, intent: PowerOffIntent(), accessibilityLabel: "Power off")
+                    powerOnControl
+                    powerOffControl
                 }
 
-                Spacer()
+                Divider()
+                    .frame(width: 1)
+                    .background(cardStroke.opacity(0.4))
 
-                VStack(spacing: 12) {
-                    volumeButton(symbol: "+", intent: VolumeUpIntent(), accessibilityLabel: "Volume up")
-                    volumeButton(symbol: "-", intent: VolumeDownIntent(), accessibilityLabel: "Volume down")
+                VStack(spacing: 10) {
+                    volumeUpControl
+                    volumeDownControl
                 }
 
-                Spacer()
+                Divider()
+                    .frame(width: 1)
+                    .background(cardStroke.opacity(0.4))
 
                 VStack(spacing: 12) {
-                    controlButton(systemName: "play.circle.fill", tint: .blue, intent: PlayIntent(), accessibilityLabel: "Play")
-                    controlButton(systemName: "pause.circle.fill", tint: .indigo, intent: PauseIntent(), accessibilityLabel: "Pause")
+                    playControl
+                    pauseControl
                 }
             }
+            .frame(maxWidth: .infinity)
         }
-        .padding()
     }
 
     private var largeLayout: some View {
-        VStack(spacing: 18) {
-            largeStatusHeader
-
-            HStack(alignment: .top, spacing: 16) {
-                VStack(spacing: 12) {
-                    controlButton(systemName: "power.circle.fill", tint: .green, intent: PowerOnIntent(), accessibilityLabel: "Power on")
-                    controlButton(systemName: "power.circle.fill", tint: .red, intent: PowerOffIntent(), accessibilityLabel: "Power off")
-                    HStack(spacing: 12) {
-                        controlButton(systemName: "play.circle.fill", tint: .blue, intent: PlayIntent(), accessibilityLabel: "Play")
-                        controlButton(systemName: "pause.circle.fill", tint: .indigo, intent: PauseIntent(), accessibilityLabel: "Pause")
-                    }
+        VStack(spacing: 16) {
+            card {
+                HStack(spacing: 12) {
+                    quickActionButton(title: "Plex", accent: Color.orange, intent: LaunchPlexIntent())
+                    quickActionButton(title: "YouTube", accent: Color.red, intent: LaunchYouTubeIntent())
+                    quickActionButton(title: "HDMI 1", accent: accentPurple, intent: SwitchHDMI1Intent())
                 }
-                .frame(maxWidth: .infinity, alignment: .top)
-
-                VStack(spacing: 12) {
-                    navigationButton(symbol: "chevron.up", intent: NavUpIntent(), accessibilityLabel: "Navigate up")
-                    HStack(spacing: 12) {
-                        navigationButton(symbol: "chevron.left", intent: NavLeftIntent(), accessibilityLabel: "Navigate left")
-                        okButton
-                        navigationButton(symbol: "chevron.right", intent: NavRightIntent(), accessibilityLabel: "Navigate right")
-                    }
-                    navigationButton(symbol: "chevron.down", intent: NavDownIntent(), accessibilityLabel: "Navigate down")
-                    backButton
-                }
-                .frame(maxWidth: .infinity)
-
-                VStack(spacing: 12) {
-                    volumeButton(symbol: "+", intent: VolumeUpIntent(), accessibilityLabel: "Volume up")
-                    volumeButton(symbol: "-", intent: VolumeDownIntent(), accessibilityLabel: "Volume down")
-                }
-                .frame(maxWidth: .infinity, alignment: .top)
             }
 
-            quickLaunchRow
+            HStack(spacing: 16) {
+                card {
+                    VStack(spacing: 14) {
+                        HStack(spacing: 12) {
+                            powerOnControl
+                            powerOffControl
+                        }
+                        HStack(spacing: 12) {
+                            playControl
+                            pauseControl
+                        }
+                    }
+                }
+
+                navigationCluster
+
+                card {
+                    VStack(spacing: 12) {
+                        volumeUpControl
+                        volumeDownControl
+                    }
+                }
+            }
+
+            quickBackButton
         }
-        .padding()
     }
 
-    private var statusHeader: some View {
-        HStack(spacing: 8) {
-            Circle()
-                .fill(entry.statusColor)
-                .frame(width: 10, height: 10)
-            Text(entry.statusLabel)
-                .font(.caption)
-                .foregroundStyle(.secondary)
-            Spacer()
+    private func card<Content: View>(@ViewBuilder content: () -> Content) -> some View {
+        VStack(alignment: .leading, spacing: 14, content: content)
+            .padding(16)
+            .frame(maxWidth: .infinity)
+            .background(
+                RoundedRectangle(cornerRadius: 18, style: .continuous)
+                    .fill(cardBackground)
+                    .shadow(color: Color.black.opacity(0.4), radius: 18, x: 0, y: 12)
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: 18, style: .continuous)
+                    .stroke(cardStroke, lineWidth: 1)
+            )
+    }
+
+    private var navigationCluster: some View {
+        card {
+            VStack(spacing: 14) {
+                Spacer(minLength: 0)
+                navButton(symbol: "chevron.up", intent: NavUpIntent(), accessibilityLabel: "Navigate up")
+                HStack(spacing: 14) {
+                    navButton(symbol: "chevron.left", intent: NavLeftIntent(), accessibilityLabel: "Navigate left")
+                    okButton
+                    navButton(symbol: "chevron.right", intent: NavRightIntent(), accessibilityLabel: "Navigate right")
+                }
+                navButton(symbol: "chevron.down", intent: NavDownIntent(), accessibilityLabel: "Navigate down")
+                Spacer(minLength: 0)
+            }
         }
     }
 
-    private var largeStatusHeader: some View {
-        HStack(spacing: 10) {
-            Circle()
-                .fill(entry.statusColor)
-                .frame(width: 12, height: 12)
-            Text(entry.statusLabel)
-                .font(.footnote)
-                .foregroundStyle(.secondary)
-            Spacer()
+    private var quickBackButton: some View {
+        Button(intent: NavBackIntent()) {
+            HStack(spacing: 10) {
+                Image(systemName: "arrow.uturn.left")
+                    .font(.subheadline.weight(.semibold))
+                Text("Back")
+                    .font(.subheadline.weight(.semibold))
+            }
+            .foregroundStyle(softText)
+            .frame(maxWidth: .infinity)
+            .padding(.vertical, 12)
         }
+        .buttonStyle(.plain)
+        .background(cardBackground, in: Capsule())
+        .overlay(
+            Capsule().stroke(cardStroke, lineWidth: 1)
+        )
+        .accessibilityLabel("Go back")
     }
 
-    @ViewBuilder
-    private func controlButton(systemName: String, tint: Color, intent: some AppIntent, accessibilityLabel: String) -> some View {
+    private func circularControl<Content: View>(intent: some AppIntent, background: Color, foreground: Color = .white, accessibilityLabel: String, @ViewBuilder content: () -> Content) -> some View {
         Button(intent: intent) {
-            Image(systemName: systemName)
-                .font(.title2)
-                .frame(width: 44, height: 44)
-                .contentShape(Circle())
+            content()
+                .font(.title3.weight(.semibold))
+                .frame(width: 56, height: 56)
         }
-        .buttonStyle(.borderedProminent)
-        .tint(tint)
-        .foregroundStyle(.white)
-        .clipShape(Circle())
+        .buttonStyle(.plain)
+        .foregroundStyle(foreground)
+        .background(
+            Circle()
+                .fill(background)
+        )
+        .overlay(
+            Circle()
+                .stroke(cardStroke.opacity(0.6), lineWidth: 1)
+        )
         .accessibilityLabel(accessibilityLabel)
     }
 
-    @ViewBuilder
-    private func navigationButton(symbol: String, intent: some AppIntent, accessibilityLabel: String) -> some View {
+    private func navButton(symbol: String, intent: some AppIntent, accessibilityLabel: String) -> some View {
         Button(intent: intent) {
             Image(systemName: symbol)
-                .font(.title2.bold())
-                .frame(width: 48, height: 48)
-                .contentShape(RoundedRectangle(cornerRadius: 12))
+                .font(.title3.weight(.semibold))
+                .frame(width: 56, height: 56)
         }
-        .buttonStyle(.borderedProminent)
-        .buttonBorderShape(.roundedRectangle(radius: 12))
-        .tint(Color.accentColor)
-        .foregroundStyle(.white)
+        .buttonStyle(.plain)
+        .foregroundStyle(softText)
+        .background(
+            RoundedRectangle(cornerRadius: 16, style: .continuous)
+                .fill(neutralFill)
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 16, style: .continuous)
+                .stroke(cardStroke.opacity(0.6), lineWidth: 1)
+        )
         .accessibilityLabel(accessibilityLabel)
     }
 
     private var okButton: some View {
         Button(intent: NavOkIntent()) {
             Text("OK")
-                .font(.headline.bold())
-                .frame(width: 48, height: 48)
-                .contentShape(RoundedRectangle(cornerRadius: 12))
+                .font(.headline.weight(.semibold))
+                .frame(width: 56, height: 56)
         }
-        .buttonStyle(.borderedProminent)
-        .buttonBorderShape(.roundedRectangle(radius: 12))
-        .tint(Color.accentColor)
-        .foregroundStyle(.white)
+        .buttonStyle(.plain)
+        .foregroundStyle(Color.black.opacity(0.85))
+        .background(
+            RoundedRectangle(cornerRadius: 16, style: .continuous)
+                .fill(accentBlue)
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 16, style: .continuous)
+                .stroke(cardStroke.opacity(0.3), lineWidth: 1)
+        )
         .accessibilityLabel("Confirm selection")
     }
 
-    private var backButton: some View {
-        Button(intent: NavBackIntent()) {
-            Label("Back", systemImage: "arrow.uturn.left")
-                .labelStyle(.titleAndIcon)
-                .font(.subheadline.weight(.semibold))
-                .frame(maxWidth: .infinity)
-                .padding(.vertical, 10)
-        }
-        .buttonStyle(.borderedProminent)
-        .buttonBorderShape(.roundedRectangle(radius: 12))
-        .tint(Color.gray.opacity(0.4))
-        .foregroundStyle(.primary)
-        .accessibilityLabel("Go back")
-    }
-
-    private var quickLaunchRow: some View {
-        HStack(spacing: 12) {
-            quickActionButton(title: "Plex", tint: .orange, intent: LaunchPlexIntent())
-            quickActionButton(title: "YouTube", tint: .red, intent: LaunchYouTubeIntent())
-            quickActionButton(title: "HDMI 1", tint: .purple, intent: SwitchHDMI1Intent())
-        }
-    }
-
-    @ViewBuilder
-    private func quickActionButton(title: String, tint: Color, intent: some AppIntent) -> some View {
+    private func quickActionButton(title: String, accent: Color, intent: some AppIntent) -> some View {
         Button(intent: intent) {
-            Text(title)
-                .font(.subheadline.weight(.semibold))
-                .frame(maxWidth: .infinity)
-                .padding(.vertical, 10)
+            HStack(spacing: 8) {
+                Circle()
+                    .fill(accent)
+                    .frame(width: 8, height: 8)
+                Text(title)
+                    .font(.caption.weight(.semibold))
+                    .foregroundStyle(softText)
+                Spacer(minLength: 0)
+            }
+            .frame(maxWidth: .infinity)
+            .padding(.vertical, 10)
         }
-        .buttonStyle(.borderedProminent)
-        .buttonBorderShape(.roundedRectangle(radius: 14))
-        .tint(tint)
-        .foregroundStyle(.white)
+        .buttonStyle(.plain)
+        .background(cardBackground, in: Capsule())
+        .overlay(
+            Capsule().stroke(cardStroke, lineWidth: 1)
+        )
         .accessibilityLabel(title)
+    }
+
+    private var powerOnControl: some View {
+        circularControl(intent: PowerOnIntent(), background: accentGreen.opacity(0.85), accessibilityLabel: "Power on") {
+            Image(systemName: "power")
+        }
+    }
+
+    private var powerOffControl: some View {
+        circularControl(intent: PowerOffIntent(), background: accentRed.opacity(0.85), accessibilityLabel: "Power off") {
+            Image(systemName: "power")
+        }
+    }
+
+    private var playControl: some View {
+        circularControl(intent: PlayIntent(), background: accentBlue.opacity(0.9), accessibilityLabel: "Play") {
+            Image(systemName: "play.fill")
+        }
+    }
+
+    private var pauseControl: some View {
+        circularControl(intent: PauseIntent(), background: accentPurple.opacity(0.9), accessibilityLabel: "Pause") {
+            Image(systemName: "pause.fill")
+        }
+    }
+
+    private var volumeUpControl: some View {
+        circularControl(intent: VolumeUpIntent(), background: neutralFill, accessibilityLabel: "Volume up") {
+            Text("+")
+        }
+    }
+
+    private var volumeDownControl: some View {
+        circularControl(intent: VolumeDownIntent(), background: neutralFill, accessibilityLabel: "Volume down") {
+            Text("-")
+        }
     }
 }
 
@@ -268,7 +348,9 @@ struct RemotePanelWidget: Widget {
     var body: some WidgetConfiguration {
         StaticConfiguration(kind: Self.kind, provider: RemotePanelProvider()) { entry in
             RemotePanelEntryView(entry: entry)
-                .containerBackground(.fill.tertiary, for: .widget)
+                .containerBackground(for: .widget) {
+                    Color(red: 0.05, green: 0.06, blue: 0.08)
+                }
         }
         .configurationDisplayName("LG TV Remote")
         .description("Quick controls for your LG TV.")
